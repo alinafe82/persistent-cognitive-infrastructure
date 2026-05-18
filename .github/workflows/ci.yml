@@ -25,6 +25,27 @@ jobs:
       - name: Run verification
         run: scripts/verify.sh
 
+  service-tests:
+    name: Service runtime tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/control-plane
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install service
+        run: python -m pip install -e ".[dev]"
+
+      - name: Run tests
+        run: python -m pytest -q
+
   frontend:
     name: Frontend lint and build
     runs-on: ubuntu-latest

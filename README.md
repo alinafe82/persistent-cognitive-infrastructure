@@ -75,6 +75,7 @@ persistent-cognitive-infrastructure/
     api/openapi.yaml
     architecture/
     diagrams/
+    repository/quality-gates.md
     repository/public-protection.md
     roadmap/mvp.md
     security/threat-model.md
@@ -135,6 +136,8 @@ Implemented:
 - Postgres graph schema
 - FastAPI control-plane shell
 - workload scheduler, confidence, reconciliation, and memory runtime modules
+- claim lifecycle and source-authority contracts
+- runtime regression tests
 - Temporal workflow shape
 - Docker Compose
 - Kubernetes manifests
@@ -152,3 +155,7 @@ Not implemented yet:
 - model gateway
 - sandbox worker pool
 - persisted replay bundles
+
+## Differentiation
+
+Many adjacent systems focus on memory retrieval for model applications. PCI's narrower boundary is operational state control: source authority, claim lifecycle, policy-gated workloads, replay metadata, and reconciliation against systems of record. The runtime is useful only if it can explain what it believes, where that belief came from, how stale it is, and what would invalidate it.
