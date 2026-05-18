@@ -83,6 +83,8 @@ persistent-cognitive-infrastructure/
     repository/public-protection.md
     roadmap/mvp.md
     security/threat-model.md
+    strategy/go-to-market.md
+    strategy/vision.md
   proto/pci/v1/
   schemas/json/
   schemas/sql/001_core.sql
