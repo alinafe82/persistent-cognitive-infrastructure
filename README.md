@@ -54,6 +54,10 @@ PCI is not positioned as a personal assistant, chat surface, or channel gateway.
 
 The repository is intended to be public. It includes MIT licensing, security reporting, CODEOWNERS, CI, CodeQL, dependency review, Dependabot, branch-protection guidance, and a no-personal-email public contact rule. Security reports use `security@repowave.dev`.
 
+## Discovery Keywords
+
+Persistent Cognitive Infrastructure, cognitive infrastructure, AI infrastructure, LLMOps, context graph, semantic memory, semantic event bus, event-driven AI, cognition scheduler, reconciliation engine, confidence scoring, source-of-truth reconciliation, governed memory, model orchestration, MCP, Temporal, Kubernetes, FastAPI, Next.js, self-hosted AI, enterprise AI governance, distributed systems, observability, deterministic replay.
+
 ## Architecture
 
 | Component | Responsibility |

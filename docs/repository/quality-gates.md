@@ -84,7 +84,7 @@ This checklist is the public release bar. It turns repeated review into concrete
 
 61. Branch protection is documented.
 62. Required checks are documented.
-63. Code owner review is documented.
+63. Code ownership is documented without requiring self-review.
 64. Force pushes are disabled after publish.
 65. Branch deletion is disabled after publish.
 66. Secret scanning is enabled after publish.

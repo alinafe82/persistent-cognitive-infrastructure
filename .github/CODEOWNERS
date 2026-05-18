@@ -2,7 +2,7 @@
 # names or email addresses in CODEOWNERS.
 * @alinafe82
 
-# Security-sensitive areas require explicit owner review.
+# Security-sensitive areas keep explicit ownership for routing and audit.
 /.github/ @alinafe82
 /deployments/ @alinafe82
 /proto/ @alinafe82

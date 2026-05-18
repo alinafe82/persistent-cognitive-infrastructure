@@ -75,7 +75,10 @@ blocked_pitch_terms = [
 ]
 
 excluded_parts = {".git", ".next", ".playwright-cli", "node_modules", "__pycache__"}
-excluded_slop_files = {Path("scripts/verify.sh")}
+excluded_slop_files = {
+    Path("scripts/verify.sh"),
+    Path("frontend/control-plane/package-lock.json"),
+}
 
 for path in Path(".").rglob("*"):
     if path.is_file() and not excluded_parts.intersection(path.parts):

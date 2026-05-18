@@ -60,8 +60,7 @@ This repository must never contain:
 Public deployment of this repository requires:
 
 - branch protection on `main`
-- required pull request reviews
-- required CODEOWNER review
+- owner-controlled pull request or direct-maintainer merge flow
 - required CI checks
 - secret scanning enabled
 - push protection enabled

@@ -53,10 +53,8 @@ Enable these settings before announcing the public repository:
 
 Configure `main` with:
 
-- require a pull request before merging
-- require at least one approving review
-- require review from CODEOWNERS
-- dismiss stale approvals when new commits are pushed
+- use owner-controlled pull requests for non-trivial changes
+- do not require self-review for a single-maintainer repository
 - require status checks to pass
 - require branches to be up to date before merging
 - require conversation resolution
