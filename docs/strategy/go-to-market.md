@@ -1,6 +1,6 @@
 # Go-To-Market Plan
 
-The goal is to find a paid wedge before expanding the runtime. PCI should not sell a broad AI platform first. It should sell a specific operational outcome to a specific buyer.
+The goal is to find a paid wedge before expanding the runtime. PCI should not sell a broad AI platform first. It should sell codebase accuracy to a specific buyer.
 
 ## Initial Customer Profile
 
@@ -8,10 +8,10 @@ Start with engineering organizations that have:
 
 - 50 or more engineers
 - multiple repositories and services
-- CI, deployment, incident, and security tools spread across systems
+- repositories, CI, deployment, incident, and security tools spread across systems
 - audit or compliance pressure
 - platform engineering ownership
-- recurring questions about delivery state, service ownership, incident follow-up, or policy drift
+- recurring questions about ownership, dependencies, API contracts, runtime behavior, deployment state, or policy drift
 
 Best early buyers:
 
@@ -25,22 +25,21 @@ Avoid buyers who only want a chat interface. PCI should be sold as operational i
 
 ## First Paid Offer
 
-Offer a four-week delivery-state graph pilot.
+Offer a four-week codebase accuracy pilot.
 
 Scope:
 
-- ingest repository and pull request events
-- ingest CI and deployment events when available
-- model services, owners, deployments, incidents, and policies
+- ingest repository, pull request, manifest, ownership, CI, and deployment events
+- model services, owners, dependencies, API contracts, tests, deployments, incidents, and policies
 - surface claims with evidence and confidence
 - reconcile selected claims against source systems
-- provide replay metadata for each automated workload
+- provide replay metadata for each verification workload
 
 Output:
 
 - a live control-plane view
 - a written findings report
-- a list of unreliable delivery-state assumptions
+- a list of unreliable codebase assumptions
 - a map of source systems and authority
 - recommended next integrations
 
@@ -50,15 +49,19 @@ This is narrow enough to sell and concrete enough to evaluate.
 
 Lead with problems customers already feel:
 
-- nobody knows which service is really deployed
+- nobody knows which code facts are still true
+- nobody knows who really owns a subsystem
+- dependency maps disagree with the implementation
+- API contracts drift from code
+- test coverage does not map to changed behavior
 - incident follow-up loses context
 - ownership data is stale
 - policy changes are not reconciled across repos
 - audit evidence takes too long to assemble
 - deployment state differs between tools
-- teams ask the same delivery-state questions repeatedly
+- teams ask the same codebase questions repeatedly
 
-The pitch is not "AI that works for you." The pitch is "verified operational state across delivery systems."
+The pitch is not "AI that works for you." The pitch is "verified codebase state with evidence and freshness."
 
 ## Pricing Hypothesis
 
@@ -66,7 +69,7 @@ Pilot:
 
 - paid pilot: 10k to 25k
 - duration: four weeks
-- limited to one engineering org or platform group
+- limited to one engineering org, platform group, or product area
 - includes setup, connectors, report, and weekly review
 
 Team subscription:
@@ -99,18 +102,18 @@ Pricing should rise with retained events, connected systems, managed workers, an
 
 Prioritize revenue in this order:
 
-1. Paid delivery-state graph pilots.
+1. Paid codebase accuracy pilots.
 2. Hosted control plane subscriptions.
 3. Self-hosted annual contracts.
 4. Advanced connector packages.
 5. Audit retention and evidence export.
 6. SSO, directory, and access-control integrations.
-7. Managed worker capacity for reconciliation and model calls.
+7. Managed verification capacity for reconciliation and model calls.
 8. Policy packs for regulated teams.
 9. Implementation services for source-system integration.
 10. Priority support and private deployment reviews.
 
-The first cash should come from a buyer paying to solve a concrete delivery-state pain, not from a general platform subscription. The repeatable business comes after the same pilot workflow can be installed quickly and expanded across more systems.
+The first cash should come from a buyer paying to solve concrete codebase accuracy pain, not from a general platform subscription. The repeatable business comes after the same pilot workflow can be installed quickly and expanded across more systems.
 
 ## Product Packaging
 
@@ -118,7 +121,7 @@ Package the business as four products:
 
 | Product | Buyer | What They Pay For |
 | --- | --- | --- |
-| Delivery State Pilot | Platform or engineering leader | Four-week mapping of repo, CI, deploy, incident, and policy state |
+| Codebase Accuracy Pilot | Platform or engineering leader | Four-week mapping of ownership, dependencies, APIs, tests, deployments, and policy state |
 | PCI Cloud | Teams that want hosted infrastructure | Managed control plane, retained events, graph views, reconciliation jobs |
 | PCI Self-Hosted | Security-conscious engineering orgs | Helm-based deployment, private data plane, support, upgrades |
 | PCI Regulated | Teams with audit pressure | SSO, audit retention, evidence export, policy packs, private deployment review |
@@ -130,9 +133,14 @@ The pilot is the wedge. Cloud and self-hosted deployments are the compounding re
 Track concrete before-and-after measurements:
 
 - time to answer "what changed?"
+- time to answer "who owns this?"
+- time to answer "what depends on this?"
+- time to answer "what tests cover this?"
 - time to gather incident evidence
 - number of stale ownership records found
 - number of contradicted deployment claims found
+- number of undocumented dependency claims found
+- number of API contract drift findings
 - number of policy drift findings
 - percentage of claims with authoritative evidence
 - number of repeated questions replaced by graph queries
@@ -143,11 +151,11 @@ If these metrics do not improve, the wedge is wrong or the implementation is not
 
 Use one believable scenario:
 
-1. A pull request changes a service.
-2. CI passes and a deployment event arrives.
-3. PCI creates claims about service version, owner, deployment target, and policy state.
-4. A later source-system check finds that the deployment rolled back.
-5. PCI marks the prior claim as drifted, links evidence, and schedules follow-up.
+1. A pull request changes a service endpoint and package manifest.
+2. CI passes and repository events arrive.
+3. PCI creates claims about endpoint ownership, dependencies, tests, deployment target, and policy state.
+4. A later source-system check finds that ownership and dependency claims disagree with the code.
+5. PCI marks the prior claims as drifted, links evidence, and schedules follow-up verification.
 6. The operator opens the claim and sees source, confidence, validity, and replay path.
 
 This demo is stronger than a chatbot because it shows state, evidence, and correction over time.
@@ -156,18 +164,18 @@ This demo is stronger than a chatbot because it shows state, evidence, and corre
 
 Short version:
 
-> We are building PCI, a control plane for verified delivery state across repos, CI, deploys, incidents, and policy. It stores claims with evidence, confidence, and reconciliation history instead of relying on chat memory. We are looking for platform teams with stale ownership, deployment drift, or audit evidence pain for a four-week pilot.
+> We are building PCI, a control plane for verified codebase state across repos, manifests, ownership, CI, deploys, incidents, and policy. It stores claims with evidence, confidence, and reconciliation history instead of relying on chat memory. We are looking for platform teams with stale ownership, dependency drift, API drift, deployment drift, or audit evidence pain for a four-week pilot.
 
 Follow-up question:
 
-> What delivery-state question takes your team too long to answer today?
+> What codebase question takes your team too long to answer today?
 
 ## Weekly Operating Cadence
 
 Every week:
 
 - talk to five platform or engineering leaders
-- demo one real delivery-state workflow
+- demo one real codebase accuracy workflow
 - write down every repeated customer question
 - convert one repeated question into a graph query or reconciliation workflow
 - improve one connector or source authority rule
@@ -183,7 +191,7 @@ The narrative:
 
 - AI adoption is creating side effects without enough state control
 - PCI gives organizations a runtime for claims, evidence, confidence, replay, and reconciliation
-- the first wedge is software delivery state
+- the first wedge is codebase accuracy
 - the expansion path is more operational domains with the same trust model
 - open source drives trust and self-hosting
 - hosted and regulated deployments create revenue
@@ -192,8 +200,9 @@ The narrative:
 
 1. Build GitHub event ingestion end to end.
 2. Build the claim detail page in the UI.
-3. Add one reconciliation adapter against GitHub.
-4. Create a demo dataset with repo, CI, deployment, and incident events.
-5. Record a short walkthrough.
-6. Contact twenty platform leaders with the pilot offer.
-7. Convert the first serious user into a paid pilot.
+3. Add package manifest and ownership extraction.
+4. Add one reconciliation adapter against GitHub.
+5. Create a demo dataset with repo, manifest, ownership, CI, deployment, and incident events.
+6. Record a short walkthrough.
+7. Contact twenty platform leaders with the pilot offer.
+8. Convert the first serious user into a paid pilot.

@@ -76,11 +76,10 @@ Kubernetes:
 
 ## First Slice
 
-The first useful slice is software delivery state:
+The first useful slice is codebase accuracy:
 
-- ingest repository, pull request, deployment, incident, and policy events
-- project repositories, services, deployments, incidents, owners, policies, and claims
+- ingest repository, pull request, manifest, ownership, CI, deployment, incident, and policy events
+- project repositories, services, dependencies, APIs, tests, deployments, incidents, owners, policies, and claims
 - schedule reconciliation when confidence drops or source state changes
-- record execution lineage and replay metadata
-- expose graph, event, workload, confidence, and reconciliation views
-
+- record verification lineage and replay metadata
+- expose graph, event, claim, confidence, and reconciliation views
