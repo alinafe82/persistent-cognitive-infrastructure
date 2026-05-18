@@ -1,0 +1,57 @@
+flowchart TB
+  subgraph Internet["Public Entry"]
+    Ingress["Ingress Controller"]
+    OIDC["OIDC Provider"]
+  end
+
+  subgraph Control["pci-control namespace"]
+    API["Control Plane API"]
+    Scheduler["Scheduler"]
+    Policy["Policy Service"]
+    UI["Next.js Control Plane UI"]
+  end
+
+  subgraph Data["pci-data namespace"]
+    Postgres["Postgres with pgvector"]
+    EventBus["NATS or Kafka"]
+    Redis["Redis"]
+    ObjectStore["S3-Compatible Object Store"]
+  end
+
+  subgraph TemporalNS["pci-workflows namespace"]
+    Temporal["Temporal Cluster"]
+    Workers["Workflow Workers"]
+  end
+
+  subgraph Exec["pci-execution namespace"]
+    Sandbox["Sandboxed Code Jobs"]
+    MCPWorkers["MCP Workers"]
+    ModelGateway["Model Gateway"]
+  end
+
+  subgraph Obs["pci-observability namespace"]
+    OTel["OpenTelemetry Collector"]
+    Prom["Prometheus"]
+    Grafana["Grafana"]
+  end
+
+  Ingress --> OIDC
+  OIDC --> UI
+  OIDC --> API
+  API --> Scheduler
+  Scheduler --> Policy
+  API --> Postgres
+  Scheduler --> EventBus
+  Workers --> EventBus
+  Workers --> Postgres
+  Workers --> ObjectStore
+  Workers --> Sandbox
+  Workers --> MCPWorkers
+  Workers --> ModelGateway
+  Temporal --> Workers
+  API --> OTel
+  Scheduler --> OTel
+  Workers --> OTel
+  OTel --> Prom
+  Prom --> Grafana
+

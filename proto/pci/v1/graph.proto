@@ -1,0 +1,85 @@
+syntax = "proto3";
+
+package pci.v1;
+
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+import "pci/v1/common.proto";
+
+option go_package = "github.com/pci/persistent-cognitive-infrastructure/proto/pci/v1;pciv1";
+
+enum EntityKind {
+  ENTITY_KIND_UNSPECIFIED = 0;
+  ENTITY_KIND_REPOSITORY = 1;
+  ENTITY_KIND_SERVICE = 2;
+  ENTITY_KIND_DEPLOYMENT = 3;
+  ENTITY_KIND_PULL_REQUEST = 4;
+  ENTITY_KIND_INCIDENT = 5;
+  ENTITY_KIND_CUSTOMER = 6;
+  ENTITY_KIND_PERSON = 7;
+  ENTITY_KIND_TEAM = 8;
+  ENTITY_KIND_POLICY = 9;
+  ENTITY_KIND_DOCUMENT = 10;
+  ENTITY_KIND_DECISION = 11;
+  ENTITY_KIND_SYSTEM = 12;
+  ENTITY_KIND_SECRET = 13;
+  ENTITY_KIND_DATASET = 14;
+  ENTITY_KIND_CONTRACT = 15;
+  ENTITY_KIND_MEMORY = 16;
+}
+
+message Entity {
+  string entity_id = 1;
+  string tenant_id = 2;
+  EntityKind kind = 3;
+  string canonical_name = 4;
+  repeated string aliases = 5;
+  SourceRef primary_source = 6;
+  Confidence confidence = 7;
+  DataClassification data_classification = 8;
+  google.protobuf.Struct attributes = 9;
+  google.protobuf.Timestamp created_at = 10;
+  google.protobuf.Timestamp updated_at = 11;
+}
+
+message Relationship {
+  string relationship_id = 1;
+  string tenant_id = 2;
+  string subject_entity_id = 3;
+  string predicate = 4;
+  string object_entity_id = 5;
+  TimeRange valid_time = 6;
+  SourceRef source = 7;
+  Confidence confidence = 8;
+  google.protobuf.Struct attributes = 9;
+}
+
+message Evidence {
+  string evidence_id = 1;
+  string tenant_id = 2;
+  string evidence_type = 3;
+  SourceRef source = 4;
+  string uri = 5;
+  string content_hash = 6;
+  DataClassification data_classification = 7;
+  google.protobuf.Struct metadata = 8;
+  google.protobuf.Timestamp observed_at = 9;
+}
+
+message Claim {
+  string claim_id = 1;
+  string tenant_id = 2;
+  string subject_entity_id = 3;
+  string predicate = 4;
+  string object_entity_id = 5;
+  google.protobuf.Value object_value = 6;
+  TimeRange valid_time = 7;
+  google.protobuf.Timestamp observed_at = 8;
+  Confidence confidence = 9;
+  SourceRef source = 10;
+  repeated string evidence_ids = 11;
+  string contradiction_set_id = 12;
+  string created_by_workload_id = 13;
+  google.protobuf.Struct attributes = 14;
+}
+

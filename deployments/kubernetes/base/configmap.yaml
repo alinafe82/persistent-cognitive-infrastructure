@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pci-control-plane-config
+  namespace: pci
+data:
+  PCI_ENVIRONMENT: production
+  PCI_NATS_URL: nats://nats.pci.svc.cluster.local:4222
+  PCI_TEMPORAL_ADDRESS: temporal-frontend.pci.svc.cluster.local:7233
+  PCI_POLICY_BUNDLE_VERSION: production
+

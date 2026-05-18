@@ -1,0 +1,31 @@
+sequenceDiagram
+  autonumber
+  participant Bus as Semantic Event Bus
+  participant Graph as Context Graph Projector
+  participant Scheduler as Workload Scheduler
+  participant Policy as Policy Engine
+  participant Assembly as Execution Assembly
+  participant Temporal as Temporal Workflow
+  participant Runtime as Execution Runtime
+  participant Sources as Source Systems
+  participant Memory as Memory Engine
+  participant Audit as Audit Log
+
+  Bus->>Graph: Deliver semantic event
+  Graph->>Graph: Materialize entities, relations, claims
+  Graph->>Scheduler: Emit graph delta trigger
+  Scheduler->>Policy: Evaluate admission constraints
+  Policy-->>Scheduler: Policy decision and required approvals
+  Scheduler->>Assembly: Create admitted workload
+  Assembly->>Temporal: Start execution graph
+  Temporal->>Runtime: Retrieve context
+  Temporal->>Runtime: Rank evidence
+  Temporal->>Runtime: Execute model or deterministic primitive
+  Temporal->>Runtime: Verify claims
+  Runtime->>Sources: Validate authoritative facts when required
+  Sources-->>Runtime: Source snapshot
+  Runtime-->>Temporal: Primitive observations
+  Temporal->>Bus: Emit outcome claim events
+  Temporal->>Memory: Submit compression candidate
+  Memory->>Bus: Emit promoted memory event
+  Temporal->>Audit: Record lineage and policy decisions

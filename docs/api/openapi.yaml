@@ -1,0 +1,723 @@
+openapi: 3.1.0
+info:
+  title: Persistent Cognitive Infrastructure Control Plane API
+  version: 0.1.0
+  description: API contracts for semantic events, context graph reads, workloads, reconciliation, memory, approvals, and replay.
+servers:
+  - url: http://localhost:8080
+    description: Local development
+security:
+  - bearerAuth: []
+paths:
+  /healthz:
+    get:
+      operationId: getHealth
+      security: []
+      responses:
+        "200":
+          description: Service health.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+  /v1/events:
+    post:
+      operationId: ingestSemanticEvent
+      summary: Ingest a semantic event.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SemanticEventEnvelope"
+      responses:
+        "202":
+          description: Event accepted.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventIngestResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /v1/tenants/{tenant_id}/graph/entities:
+    get:
+      operationId: listEntities
+      summary: List entities in a tenant graph.
+      parameters:
+        - $ref: "#/components/parameters/TenantId"
+        - name: kind
+          in: query
+          schema:
+            type: string
+        - name: q
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            default: 50
+      responses:
+        "200":
+          description: Entity list.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - entities
+                properties:
+                  entities:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Entity"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /v1/tenants/{tenant_id}/graph/entities/{entity_id}:
+    get:
+      operationId: getEntity
+      summary: Get entity details with confidence and metadata.
+      parameters:
+        - $ref: "#/components/parameters/TenantId"
+        - $ref: "#/components/parameters/EntityId"
+      responses:
+        "200":
+          description: Entity details.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Entity"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /v1/tenants/{tenant_id}/graph/entities/{entity_id}/claims:
+    get:
+      operationId: listEntityClaims
+      summary: List claims for an entity.
+      parameters:
+        - $ref: "#/components/parameters/TenantId"
+        - $ref: "#/components/parameters/EntityId"
+        - name: predicate
+          in: query
+          schema:
+            type: string
+        - name: include_contradicted
+          in: query
+          schema:
+            type: boolean
+            default: true
+      responses:
+        "200":
+          description: Entity claims.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - claims
+                properties:
+                  claims:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Claim"
+  /v1/workloads:
+    post:
+      operationId: createWorkload
+      summary: Submit a workload.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkloadCreate"
+      responses:
+        "202":
+          description: Workload accepted or deferred.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkloadResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /v1/workloads/dry-run:
+    post:
+      operationId: dryRunScheduler
+      summary: Score a workload without executing it.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkloadCreate"
+      responses:
+        "200":
+          description: Scheduler decision.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SchedulerDecision"
+  /v1/workloads/{workload_id}:
+    get:
+      operationId: getWorkload
+      summary: Inspect workload state and scheduler decision.
+      parameters:
+        - $ref: "#/components/parameters/WorkloadId"
+      responses:
+        "200":
+          description: Workload state.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkloadResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /v1/workloads/{workload_id}/replay:
+    post:
+      operationId: createReplayBundle
+      summary: Create a replay bundle for a workload.
+      parameters:
+        - $ref: "#/components/parameters/WorkloadId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReplayRequest"
+      responses:
+        "202":
+          description: Replay bundle requested.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReplayResponse"
+  /v1/reconciliation/checks:
+    post:
+      operationId: requestReconciliationCheck
+      summary: Request reconciliation for claims or entities.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReconciliationRequest"
+      responses:
+        "202":
+          description: Reconciliation workload accepted.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkloadResponse"
+  /v1/memory/compressions:
+    post:
+      operationId: requestMemoryCompression
+      summary: Request memory compression for an event or claim set.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MemoryCompressionRequest"
+      responses:
+        "202":
+          description: Memory compression workload accepted.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkloadResponse"
+  /v1/approvals/{approval_id}/decisions:
+    post:
+      operationId: decideApproval
+      summary: Approve or reject a pending governance gate.
+      parameters:
+        - name: approval_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApprovalDecisionRequest"
+      responses:
+        "200":
+          description: Approval decision recorded.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Approval"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    TenantId:
+      name: tenant_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    EntityId:
+      name: entity_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    WorkloadId:
+      name: workload_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    BadRequest:
+      description: Invalid request.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Forbidden:
+      description: Policy denied the action.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    NotFound:
+      description: Resource was not found.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+  schemas:
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - service
+      properties:
+        status:
+          type: string
+          enum:
+            - ok
+        service:
+          type: string
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        trace_id:
+          type: string
+    SourceRef:
+      type: object
+      required:
+        - source_system
+      properties:
+        source_system:
+          type: string
+        source_event_id:
+          type: string
+        external_url:
+          type: string
+          format: uri
+        authority_score:
+          type: number
+          minimum: 0
+          maximum: 1
+    Confidence:
+      type: object
+      required:
+        - score
+        - band
+      properties:
+        score:
+          type: number
+          minimum: 0
+          maximum: 1
+        band:
+          type: string
+          enum:
+            - unknown
+            - low
+            - medium
+            - high
+            - verified
+            - contradicted
+        authority_score:
+          type: number
+          minimum: 0
+          maximum: 1
+        freshness_score:
+          type: number
+          minimum: 0
+          maximum: 1
+        evidence_score:
+          type: number
+          minimum: 0
+          maximum: 1
+        contradiction_penalty:
+          type: number
+          minimum: 0
+          maximum: 1
+    SemanticEventEnvelope:
+      type: object
+      required:
+        - event_id
+        - tenant_id
+        - event_type
+        - schema_version
+        - source
+        - occurred_at
+        - observed_at
+        - partition_key
+        - payload
+        - payload_hash
+      properties:
+        event_id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        event_type:
+          type: string
+        schema_version:
+          type: string
+        source:
+          $ref: "#/components/schemas/SourceRef"
+        occurred_at:
+          type: string
+          format: date-time
+        observed_at:
+          type: string
+          format: date-time
+        published_at:
+          type: string
+          format: date-time
+        partition_key:
+          type: string
+        causation_id:
+          type: string
+          format: uuid
+        correlation_id:
+          type: string
+          format: uuid
+        trace_id:
+          type: string
+        actor:
+          type: object
+          additionalProperties: true
+        data_classification:
+          type: string
+          enum:
+            - public
+            - internal
+            - confidential
+            - restricted
+            - regulated
+        policy_tags:
+          type: array
+          items:
+            type: string
+        payload:
+          type: object
+          additionalProperties: true
+        payload_hash:
+          type: string
+    EventIngestResponse:
+      type: object
+      required:
+        - event_id
+        - accepted
+      properties:
+        event_id:
+          type: string
+          format: uuid
+        accepted:
+          type: boolean
+        stream:
+          type: string
+    Entity:
+      type: object
+      required:
+        - entity_id
+        - tenant_id
+        - kind
+        - canonical_name
+        - confidence
+      properties:
+        entity_id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        kind:
+          type: string
+        canonical_name:
+          type: string
+        aliases:
+          type: array
+          items:
+            type: string
+        confidence:
+          $ref: "#/components/schemas/Confidence"
+        data_classification:
+          type: string
+        attributes:
+          type: object
+          additionalProperties: true
+    Claim:
+      type: object
+      required:
+        - claim_id
+        - tenant_id
+        - subject_entity_id
+        - predicate
+        - confidence
+      properties:
+        claim_id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        subject_entity_id:
+          type: string
+          format: uuid
+        predicate:
+          type: string
+        object_entity_id:
+          type: string
+          format: uuid
+        object_value:
+          type:
+            - object
+            - string
+            - number
+            - boolean
+            - "null"
+        confidence:
+          $ref: "#/components/schemas/Confidence"
+        evidence_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+        contradiction_set_id:
+          type: string
+          format: uuid
+    WorkloadCreate:
+      type: object
+      required:
+        - tenant_id
+        - workload_class
+        - objective
+      properties:
+        tenant_id:
+          type: string
+          format: uuid
+        workload_class:
+          type: string
+          enum:
+            - reactive
+            - preventive
+            - exploratory
+            - reconciliation
+            - compression
+            - governance
+        objective:
+          type: string
+          minLength: 8
+        input_event_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+        input_entity_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+        requested_depth:
+          type: string
+          enum:
+            - minimal
+            - standard
+            - deep
+            - exhaustive
+          default: standard
+        policy_tags:
+          type: array
+          items:
+            type: string
+        constraints:
+          type: object
+          additionalProperties: true
+    SchedulerDecision:
+      type: object
+      required:
+        - decision_id
+        - admitted
+        - admission_state
+        - score
+        - selected_depth
+      properties:
+        decision_id:
+          type: string
+          format: uuid
+        admitted:
+          type: boolean
+        admission_state:
+          type: string
+        score:
+          type: number
+        selected_depth:
+          type: string
+        primitive_allowlist:
+          type: array
+          items:
+            type: string
+        required_approval_classes:
+          type: array
+          items:
+            type: string
+        score_components:
+          type: object
+          additionalProperties:
+            type: number
+    WorkloadResponse:
+      type: object
+      required:
+        - workload_id
+        - tenant_id
+        - state
+        - decision
+      properties:
+        workload_id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        state:
+          type: string
+        decision:
+          $ref: "#/components/schemas/SchedulerDecision"
+    ReplayRequest:
+      type: object
+      required:
+        - mode
+      properties:
+        mode:
+          type: string
+          enum:
+            - lineage_only
+            - deterministic
+            - model_observed
+            - model_live
+            - source_snapshot
+            - source_live
+        include_artifacts:
+          type: boolean
+          default: false
+    ReplayResponse:
+      type: object
+      required:
+        - replay_id
+        - state
+      properties:
+        replay_id:
+          type: string
+          format: uuid
+        state:
+          type: string
+    ReconciliationRequest:
+      type: object
+      required:
+        - tenant_id
+      properties:
+        tenant_id:
+          type: string
+          format: uuid
+        claim_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+        entity_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+        source_system:
+          type: string
+    MemoryCompressionRequest:
+      type: object
+      required:
+        - tenant_id
+        - compression_type
+      properties:
+        tenant_id:
+          type: string
+          format: uuid
+        compression_type:
+          type: string
+          enum:
+            - episodic
+            - hierarchical
+            - concept
+            - temporal
+        source_event_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+        source_claim_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+    ApprovalDecisionRequest:
+      type: object
+      required:
+        - decision
+        - reason
+      properties:
+        decision:
+          type: string
+          enum:
+            - approved
+            - rejected
+        reason:
+          type: string
+          minLength: 3
+    Approval:
+      type: object
+      required:
+        - approval_id
+        - state
+      properties:
+        approval_id:
+          type: string
+          format: uuid
+        state:
+          type: string
+        reason:
+          type: string

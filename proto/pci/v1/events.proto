@@ -1,0 +1,83 @@
+syntax = "proto3";
+
+package pci.v1;
+
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+import "pci/v1/common.proto";
+
+option go_package = "github.com/pci/persistent-cognitive-infrastructure/proto/pci/v1;pciv1";
+
+enum SemanticEventType {
+  SEMANTIC_EVENT_TYPE_UNSPECIFIED = 0;
+  SEMANTIC_EVENT_TYPE_WORLD_REPO_CHANGED = 1;
+  SEMANTIC_EVENT_TYPE_WORLD_DEPLOYMENT_CHANGED = 2;
+  SEMANTIC_EVENT_TYPE_WORLD_INCIDENT_CHANGED = 3;
+  SEMANTIC_EVENT_TYPE_WORLD_CUSTOMER_CHANGED = 4;
+  SEMANTIC_EVENT_TYPE_WORLD_POLICY_CHANGED = 5;
+  SEMANTIC_EVENT_TYPE_GRAPH_CLAIM_CREATED = 6;
+  SEMANTIC_EVENT_TYPE_GRAPH_CLAIM_UPDATED = 7;
+  SEMANTIC_EVENT_TYPE_GRAPH_CLAIM_CONTRADICTED = 8;
+  SEMANTIC_EVENT_TYPE_WORKLOAD_CREATED = 9;
+  SEMANTIC_EVENT_TYPE_WORKLOAD_COMPLETED = 10;
+  SEMANTIC_EVENT_TYPE_RECONCILIATION_FINDING_CREATED = 11;
+  SEMANTIC_EVENT_TYPE_MEMORY_PROMOTED = 12;
+  SEMANTIC_EVENT_TYPE_GOVERNANCE_AUDIT_RECORDED = 13;
+}
+
+message SemanticEventEnvelope {
+  string event_id = 1;
+  string tenant_id = 2;
+  SemanticEventType event_type = 3;
+  string event_name = 4;
+  string schema_version = 5;
+  SourceRef source = 6;
+  google.protobuf.Timestamp occurred_at = 7;
+  google.protobuf.Timestamp observed_at = 8;
+  google.protobuf.Timestamp published_at = 9;
+  string partition_key = 10;
+  string causation_id = 11;
+  string correlation_id = 12;
+  TraceRef trace = 13;
+  ActorRef actor = 14;
+  DataClassification data_classification = 15;
+  repeated PolicyTag policy_tags = 16;
+  google.protobuf.Struct payload = 17;
+  string payload_hash = 18;
+}
+
+message WorkloadLifecycleEvent {
+  string workload_id = 1;
+  string tenant_id = 2;
+  string workload_class = 3;
+  string state = 4;
+  string scheduler_decision_id = 5;
+  string execution_graph_id = 6;
+  repeated string input_event_ids = 7;
+  Confidence workload_confidence = 8;
+  google.protobuf.Timestamp changed_at = 9;
+}
+
+message ReconciliationFindingEvent {
+  string finding_id = 1;
+  string tenant_id = 2;
+  string claim_id = 3;
+  string source_system = 4;
+  string source_external_id = 5;
+  string finding_type = 6;
+  Confidence previous_confidence = 7;
+  Confidence recalculated_confidence = 8;
+  repeated string evidence_ids = 9;
+  google.protobuf.Timestamp checked_at = 10;
+}
+
+message MemoryLifecycleEvent {
+  string memory_id = 1;
+  string tenant_id = 2;
+  string memory_type = 3;
+  string state = 4;
+  repeated string source_event_ids = 5;
+  repeated string source_claim_ids = 6;
+  Confidence confidence = 7;
+  google.protobuf.Timestamp changed_at = 8;
+}

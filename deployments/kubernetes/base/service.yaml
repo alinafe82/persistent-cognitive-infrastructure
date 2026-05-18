@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: pci-control-plane
+  namespace: pci
+  labels:
+    app.kubernetes.io/name: pci-control-plane
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: pci-control-plane
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+

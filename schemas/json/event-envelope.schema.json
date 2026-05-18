@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pci.dev/schemas/event-envelope.schema.json",
+  "title": "SemanticEventEnvelope",
+  "type": "object",
+  "required": [
+    "event_id",
+    "tenant_id",
+    "event_type",
+    "schema_version",
+    "source",
+    "occurred_at",
+    "observed_at",
+    "partition_key",
+    "payload",
+    "payload_hash"
+  ],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "tenant_id": {
+      "type": "string",
+      "minLength": 3
+    },
+    "event_type": {
+      "type": "string",
+      "pattern": "^pci\\.[a-z0-9_]+\\.[a-z0-9_]+$"
+    },
+    "schema_version": {
+      "type": "string",
+      "pattern": "^v[0-9]+$"
+    },
+    "source": {
+      "type": "object",
+      "required": [
+        "source_system"
+      ],
+      "properties": {
+        "source_system": {
+          "type": "string"
+        },
+        "source_event_id": {
+          "type": "string"
+        },
+        "external_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "authority_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "observed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "published_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "partition_key": {
+      "type": "string",
+      "minLength": 1
+    },
+    "causation_id": {
+      "type": "string"
+    },
+    "correlation_id": {
+      "type": "string"
+    },
+    "trace_id": {
+      "type": "string"
+    },
+    "actor": {
+      "type": "object",
+      "properties": {
+        "actor_id": {
+          "type": "string"
+        },
+        "actor_type": {
+          "type": "string"
+        },
+        "display_name": {
+          "type": "string"
+        },
+        "source_system": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "data_classification": {
+      "type": "string",
+      "enum": [
+        "public",
+        "internal",
+        "confidential",
+        "restricted",
+        "regulated"
+      ]
+    },
+    "policy_tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "payload": {
+      "type": "object"
+    },
+    "payload_hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    }
+  },
+  "additionalProperties": false
+}
+

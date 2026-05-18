@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pci.dev/schemas/workload.schema.json",
+  "title": "Workload",
+  "type": "object",
+  "required": [
+    "tenant_id",
+    "workload_class",
+    "objective"
+  ],
+  "properties": {
+    "tenant_id": {
+      "type": "string",
+      "minLength": 3
+    },
+    "workload_class": {
+      "type": "string",
+      "enum": [
+        "reactive",
+        "preventive",
+        "exploratory",
+        "reconciliation",
+        "compression",
+        "governance"
+      ]
+    },
+    "objective": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 2000
+    },
+    "input_event_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "uniqueItems": true
+    },
+    "input_entity_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "requested_depth": {
+      "type": "string",
+      "enum": [
+        "minimal",
+        "standard",
+        "deep",
+        "exhaustive"
+      ],
+      "default": "standard"
+    },
+    "max_data_classification": {
+      "type": "string",
+      "enum": [
+        "public",
+        "internal",
+        "confidential",
+        "restricted",
+        "regulated"
+      ],
+      "default": "internal"
+    },
+    "policy_tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "deadline": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "constraints": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": false
+}

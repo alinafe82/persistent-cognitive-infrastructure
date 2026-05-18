@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "pci.fullname" . }}-config
+  labels:
+    {{- include "pci.labels" . | nindent 4 }}
+data:
+  PCI_ENVIRONMENT: {{ .Values.config.environment | quote }}
+  PCI_NATS_URL: {{ .Values.config.natsUrl | quote }}
+  PCI_TEMPORAL_ADDRESS: {{ .Values.config.temporalAddress | quote }}
+  PCI_POLICY_BUNDLE_VERSION: {{ .Values.config.policyBundleVersion | quote }}
+

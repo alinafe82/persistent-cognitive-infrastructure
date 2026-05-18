@@ -1,0 +1,36 @@
+name: Bug report
+description: Report a reproducible defect in public PCI source.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: "Do not report suspected vulnerabilities here. Use private vulnerability reporting as described in SECURITY.md."
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: What behavior is wrong and who is affected?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Provide commands, inputs, and expected versus actual behavior.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Paste relevant logs with secrets removed.
+      render: text
+

@@ -1,0 +1,72 @@
+{
+  "title": "PCI Runtime",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "15s",
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Workload Admission",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(pci_workloads_admitted_total[5m])) by (tenant_id, workload_class)",
+          "legendFormat": "{{tenant_id}} {{workload_class}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Reconciliation Findings",
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(pci_reconciliation_findings_total[5m])) by (finding_type)",
+          "legendFormat": "{{finding_type}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Graph Projection Lag",
+      "gridPos": {
+        "x": 0,
+        "y": 8,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "expr": "pci_graph_projection_lag_seconds",
+          "legendFormat": "{{tenant_id}} {{topic}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Model Gateway Tokens",
+      "gridPos": {
+        "x": 12,
+        "y": 8,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(pci_model_tokens_total[5m])) by (provider, model)",
+          "legendFormat": "{{provider}} {{model}}"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pci-control-plane
+  namespace: pci
+  labels:
+    app.kubernetes.io/name: pci-control-plane
+    app.kubernetes.io/part-of: persistent-cognitive-infrastructure
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: pci-control-plane
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: pci-control-plane
+        app.kubernetes.io/part-of: persistent-cognitive-infrastructure
+    spec:
+      serviceAccountName: pci-control-plane
+      containers:
+        - name: control-plane
+          image: ghcr.io/pci/pci-control-plane:0.1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: pci-control-plane-config
+          env:
+            - name: PCI_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: pci-control-plane-secrets
+                  key: database-url
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+

@@ -1,0 +1,43 @@
+replicaCount: 3
+
+image:
+  repository: ghcr.io/pci/pci-control-plane
+  tag: "0.1.0"
+  pullPolicy: IfNotPresent
+
+serviceAccount:
+  create: true
+  name: pci-control-plane
+
+service:
+  type: ClusterIP
+  port: 8080
+
+config:
+  environment: production
+  natsUrl: nats://nats.pci.svc.cluster.local:4222
+  temporalAddress: temporal-frontend.pci.svc.cluster.local:7233
+  policyBundleVersion: production
+
+secretRefs:
+  databaseUrl:
+    name: pci-control-plane-secrets
+    key: database-url
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 256Mi
+  limits:
+    cpu: "1"
+    memory: 1Gi
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 12
+  targetCPUUtilizationPercentage: 70
+
+networkPolicy:
+  enabled: true
+

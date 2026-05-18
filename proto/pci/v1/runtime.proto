@@ -1,0 +1,98 @@
+syntax = "proto3";
+
+package pci.v1;
+
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+import "pci/v1/common.proto";
+
+option go_package = "github.com/pci/persistent-cognitive-infrastructure/proto/pci/v1;pciv1";
+
+enum ReasoningDepth {
+  REASONING_DEPTH_UNSPECIFIED = 0;
+  REASONING_DEPTH_MINIMAL = 1;
+  REASONING_DEPTH_STANDARD = 2;
+  REASONING_DEPTH_DEEP = 3;
+  REASONING_DEPTH_EXHAUSTIVE = 4;
+}
+
+enum PrimitiveType {
+  PRIMITIVE_TYPE_UNSPECIFIED = 0;
+  PRIMITIVE_TYPE_RETRIEVE_CONTEXT = 1;
+  PRIMITIVE_TYPE_EVALUATE_POLICY = 2;
+  PRIMITIVE_TYPE_RANK_EVIDENCE = 3;
+  PRIMITIVE_TYPE_REASON_SYMBOLICALLY = 4;
+  PRIMITIVE_TYPE_REASON_PROBABILISTICALLY = 5;
+  PRIMITIVE_TYPE_PLAN_EXECUTION = 6;
+  PRIMITIVE_TYPE_CALL_MODEL = 7;
+  PRIMITIVE_TYPE_RUN_TOOL = 8;
+  PRIMITIVE_TYPE_EXECUTE_CODE = 9;
+  PRIMITIVE_TYPE_SIMULATE = 10;
+  PRIMITIVE_TYPE_VERIFY_CLAIMS = 11;
+  PRIMITIVE_TYPE_COMPRESS_MEMORY = 12;
+  PRIMITIVE_TYPE_RECONCILE_REALITY = 13;
+  PRIMITIVE_TYPE_REQUEST_APPROVAL = 14;
+  PRIMITIVE_TYPE_EMIT_SEMANTIC_EVENT = 15;
+}
+
+message Workload {
+  string workload_id = 1;
+  string tenant_id = 2;
+  string workload_class = 3;
+  string objective = 4;
+  repeated string input_event_ids = 5;
+  repeated string input_entity_ids = 6;
+  ReasoningDepth requested_depth = 7;
+  DataClassification max_data_classification = 8;
+  repeated PolicyTag policy_tags = 9;
+  google.protobuf.Timestamp deadline = 10;
+  google.protobuf.Struct constraints = 11;
+}
+
+message SchedulerDecision {
+  string decision_id = 1;
+  string workload_id = 2;
+  string tenant_id = 3;
+  bool admitted = 4;
+  string admission_state = 5;
+  float score = 6;
+  ReasoningDepth selected_depth = 7;
+  repeated PrimitiveType primitive_allowlist = 8;
+  repeated string required_approval_classes = 9;
+  google.protobuf.Struct score_components = 10;
+  google.protobuf.Timestamp decided_at = 11;
+}
+
+message PrimitiveNode {
+  string node_id = 1;
+  PrimitiveType primitive_type = 2;
+  repeated string depends_on_node_ids = 3;
+  google.protobuf.Struct input = 4;
+  google.protobuf.Struct output_contract = 5;
+  repeated PolicyTag policy_tags = 6;
+  string retry_policy = 7;
+  int32 timeout_seconds = 8;
+}
+
+message ExecutionGraph {
+  string execution_graph_id = 1;
+  string workload_id = 2;
+  string tenant_id = 3;
+  repeated PrimitiveNode nodes = 4;
+  google.protobuf.Timestamp assembled_at = 5;
+  string policy_bundle_version = 6;
+}
+
+message ApprovalDecision {
+  string approval_id = 1;
+  string tenant_id = 2;
+  string workload_id = 3;
+  string approval_class = 4;
+  string state = 5;
+  ActorRef requested_by = 6;
+  ActorRef decided_by = 7;
+  string reason = 8;
+  google.protobuf.Timestamp requested_at = 9;
+  google.protobuf.Timestamp decided_at = 10;
+}
+

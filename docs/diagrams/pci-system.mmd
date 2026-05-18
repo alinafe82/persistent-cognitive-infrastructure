@@ -1,0 +1,91 @@
+flowchart LR
+  subgraph World["Source-of-Truth Systems"]
+    GitHub["GitHub"]
+    Jira["Jira"]
+    Deploy["Deployment Platform"]
+    CRM["CRM"]
+    HRIS["HRIS"]
+    PolicyRepo["Policy Repository"]
+    MCP["MCP Servers"]
+  end
+
+  subgraph Ingest["Ingestion Plane"]
+    Connectors["Connectors"]
+    Normalizer["Semantic Normalizer"]
+    Validator["Schema Validator"]
+  end
+
+  subgraph Event["Semantic Event Bus"]
+    Streams["NATS JetStream or Kafka"]
+    Replay["Replay Cursors"]
+    Lineage["Event Lineage"]
+  end
+
+  subgraph Context["Context Plane"]
+    Projector["Graph Projector"]
+    Graph["Context Graph"]
+    Vector["Vector Index"]
+    ObjectStore["Object Storage"]
+  end
+
+  subgraph Runtime["Runtime"]
+    Scheduler["Workload Scheduler"]
+    Assembly["Execution Assembly"]
+    Temporal["Temporal Workflows"]
+    RuntimeWorkers["Execution Runtime"]
+    ModelGateway["Model Gateway"]
+  end
+
+  subgraph Trust["Trust Plane"]
+    Policy["OPA or Cedar"]
+    Approvals["Approval Workflows"]
+    Audit["Immutable Audit"]
+    Vault["Secrets Manager"]
+  end
+
+  subgraph Reconcile["Reality and Memory"]
+    Reality["Reality Reconciliation"]
+    Memory["Memory Compression"]
+    Confidence["Confidence Engine"]
+  end
+
+  subgraph Observe["Observability"]
+    OTel["OpenTelemetry"]
+    Prometheus["Prometheus"]
+    Grafana["Grafana"]
+  end
+
+  World --> Connectors
+  Connectors --> Normalizer
+  Normalizer --> Validator
+  Validator --> Streams
+  Streams --> Projector
+  Streams --> Replay
+  Streams --> Lineage
+  Projector --> Graph
+  Graph --> Vector
+  Graph --> Scheduler
+  Scheduler --> Policy
+  Policy --> Scheduler
+  Scheduler --> Assembly
+  Assembly --> Temporal
+  Temporal --> RuntimeWorkers
+  RuntimeWorkers --> MCP
+  RuntimeWorkers --> ModelGateway
+  RuntimeWorkers --> Vault
+  RuntimeWorkers --> Audit
+  RuntimeWorkers --> Streams
+  Graph --> Reality
+  Reality --> World
+  Reality --> Confidence
+  Confidence --> Streams
+  Temporal --> Memory
+  Memory --> ObjectStore
+  Memory --> Streams
+  Approvals --> Audit
+  Scheduler --> Approvals
+  OTel --> Prometheus
+  Prometheus --> Grafana
+  Scheduler --> OTel
+  RuntimeWorkers --> OTel
+  Graph --> OTel

@@ -1,0 +1,7 @@
+apiVersion: v2
+name: pci
+description: Persistent Cognitive Infrastructure control plane
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+

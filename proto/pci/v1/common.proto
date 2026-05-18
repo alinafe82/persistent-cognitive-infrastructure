@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+package pci.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/pci/persistent-cognitive-infrastructure/proto/pci/v1;pciv1";
+
+enum DataClassification {
+  DATA_CLASSIFICATION_UNSPECIFIED = 0;
+  DATA_CLASSIFICATION_PUBLIC = 1;
+  DATA_CLASSIFICATION_INTERNAL = 2;
+  DATA_CLASSIFICATION_CONFIDENTIAL = 3;
+  DATA_CLASSIFICATION_RESTRICTED = 4;
+  DATA_CLASSIFICATION_REGULATED = 5;
+}
+
+enum ConfidenceBand {
+  CONFIDENCE_BAND_UNSPECIFIED = 0;
+  CONFIDENCE_BAND_UNKNOWN = 1;
+  CONFIDENCE_BAND_LOW = 2;
+  CONFIDENCE_BAND_MEDIUM = 3;
+  CONFIDENCE_BAND_HIGH = 4;
+  CONFIDENCE_BAND_VERIFIED = 5;
+  CONFIDENCE_BAND_CONTRADICTED = 6;
+}
+
+message TenantRef {
+  string tenant_id = 1;
+  string slug = 2;
+}
+
+message ActorRef {
+  string actor_id = 1;
+  string actor_type = 2;
+  string display_name = 3;
+  string source_system = 4;
+}
+
+message SourceRef {
+  string source_system = 1;
+  string source_event_id = 2;
+  string external_url = 3;
+  float authority_score = 4;
+}
+
+message TimeRange {
+  google.protobuf.Timestamp start_time = 1;
+  google.protobuf.Timestamp end_time = 2;
+}
+
+message Confidence {
+  float score = 1;
+  ConfidenceBand band = 2;
+  float authority_score = 3;
+  float freshness_score = 4;
+  float evidence_score = 5;
+  float contradiction_penalty = 6;
+  google.protobuf.Timestamp calculated_at = 7;
+}
+
+message KeyValue {
+  string key = 1;
+  string value = 2;
+}
+
+message PolicyTag {
+  string namespace = 1;
+  string name = 2;
+}
+
+message TraceRef {
+  string trace_id = 1;
+  string span_id = 2;
+}
+
