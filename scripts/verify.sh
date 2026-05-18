@@ -43,9 +43,7 @@ for path in Path("schemas/json").glob("*.json"):
         json.load(handle)
 
 private_terms = [
-    "".join(chr(code) for code in [97, 108, 105, 110, 97, 102, 101]),
     "".join(chr(code) for code in [109, 97, 116, 101, 110, 100, 97]),
-    "".join(chr(code) for code in [97, 109, 97, 116, 101, 110, 100, 97]),
     "".join(chr(code) for code in [103, 109, 97, 105, 108, 46, 99, 111, 109]),
     "".join(chr(code) for code in [105, 98, 105, 115, 108, 97, 98, 115, 46, 97, 105]),
 ]
