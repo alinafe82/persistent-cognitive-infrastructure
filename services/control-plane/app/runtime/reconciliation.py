@@ -6,7 +6,7 @@ from enum import StrEnum
 from typing import Any
 from uuid import UUID, uuid4
 
-from app.domain.models import Claim, Confidence
+from app.domain.models import Claim, ClaimState, Confidence, ConfidenceBand
 from app.runtime.confidence import ConfidenceCalculator, ConfidenceInputs
 
 
@@ -34,6 +34,7 @@ class ReconciliationFinding:
     tenant_id: UUID
     claim_id: UUID
     finding_type: ReconciliationFindingType
+    resulting_claim_state: ClaimState
     checked_at: datetime
     previous_confidence: Confidence
     recalculated_confidence: Confidence
@@ -56,6 +57,7 @@ class RealityReconciliationEngine:
             return self._finding(
                 claim,
                 ReconciliationFindingType.SOURCE_UNAVAILABLE,
+                claim.state,
                 recalculated,
                 "source snapshot was unavailable within the reconciliation deadline",
             )
@@ -64,6 +66,7 @@ class RealityReconciliationEngine:
             return self._finding(
                 claim,
                 ReconciliationFindingType.NOT_AUTHORITATIVE,
+                claim.state,
                 claim.confidence,
                 "source does not authoritatively own this predicate",
             )
@@ -83,6 +86,7 @@ class RealityReconciliationEngine:
             return self._finding(
                 claim,
                 ReconciliationFindingType.CONFIRMED,
+                ClaimState.CONFIRMED,
                 recalculated,
                 "source-of-truth value confirmed the claim",
             )
@@ -92,23 +96,24 @@ class RealityReconciliationEngine:
             return self._finding(
                 claim,
                 ReconciliationFindingType.DRIFTED,
+                ClaimState.DRIFTED,
                 recalculated,
                 "source no longer contains the claimed predicate",
             )
 
-        recalculated = self.confidence_calculator.calculate(
-            ConfidenceInputs(
-                source_authority=snapshot.authority_score,
-                extraction_quality=1.0,
-                evidence_strength=1.0,
-                age_seconds=0,
-                decay_rate=0.000001,
-                max_contradicting_confidence=snapshot.authority_score,
-            )
+        recalculated = Confidence(
+            score=0.0,
+            band=ConfidenceBand.CONTRADICTED,
+            authority_score=claim.confidence.authority_score,
+            freshness_score=claim.confidence.freshness_score,
+            evidence_score=claim.confidence.evidence_score,
+            contradiction_penalty=0.0,
+            calculated_at=datetime.now(UTC),
         )
         return self._finding(
             claim,
             ReconciliationFindingType.CONTRADICTED,
+            ClaimState.CONTRADICTED,
             recalculated,
             "source-of-truth value contradicted the claim",
         )
@@ -141,6 +146,7 @@ class RealityReconciliationEngine:
         self,
         claim: Claim,
         finding_type: ReconciliationFindingType,
+        resulting_claim_state: ClaimState,
         recalculated: Confidence,
         explanation: str,
     ) -> ReconciliationFinding:
@@ -149,10 +155,10 @@ class RealityReconciliationEngine:
             tenant_id=claim.tenant_id,
             claim_id=claim.claim_id,
             finding_type=finding_type,
+            resulting_claim_state=resulting_claim_state,
             checked_at=datetime.now(UTC),
             previous_confidence=claim.confidence,
             recalculated_confidence=recalculated,
             evidence_ids=claim.evidence_ids,
             explanation=explanation,
         )
-
