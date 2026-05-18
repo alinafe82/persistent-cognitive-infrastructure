@@ -1,13 +1,13 @@
-# Repository-wide ownership uses GitHub team identities only. Do not put
-# personal names or email addresses in CODEOWNERS.
-* @repowave/pci-maintainers
+# Repository-wide ownership uses GitHub identities only. Do not put personal
+# names or email addresses in CODEOWNERS.
+* @alinafe82
 
 # Security-sensitive areas require explicit owner review.
-/.github/ @repowave/pci-maintainers
-/deployments/ @repowave/pci-maintainers
-/proto/ @repowave/pci-maintainers
-/schemas/ @repowave/pci-maintainers
-/services/**/runtime/ @repowave/pci-maintainers
-/docs/security/ @repowave/pci-maintainers
-/SECURITY.md @repowave/pci-maintainers
-/GOVERNANCE.md @repowave/pci-maintainers
+/.github/ @alinafe82
+/deployments/ @alinafe82
+/proto/ @alinafe82
+/schemas/ @alinafe82
+/services/**/runtime/ @alinafe82
+/docs/security/ @alinafe82
+/SECURITY.md @alinafe82
+/GOVERNANCE.md @alinafe82

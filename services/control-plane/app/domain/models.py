@@ -25,6 +25,16 @@ class ConfidenceBand(StrEnum):
     CONTRADICTED = "contradicted"
 
 
+class ClaimState(StrEnum):
+    ASSERTED = "asserted"
+    CONFIRMED = "confirmed"
+    DRIFTED = "drifted"
+    CONTRADICTED = "contradicted"
+    SUPERSEDED = "superseded"
+    EXPIRED = "expired"
+    RETRACTED = "retracted"
+
+
 class ReasoningDepth(StrEnum):
     MINIMAL = "minimal"
     STANDARD = "standard"
@@ -83,6 +93,22 @@ class SourceRef(BaseContract):
     source_event_id: str | None = None
     external_url: str | None = None
     authority_score: float = Field(default=0.5, ge=0, le=1)
+
+
+class SourceAuthorityProfile(BaseContract):
+    source_system_id: UUID = Field(default_factory=uuid4)
+    tenant_id: UUID
+    name: str = Field(min_length=1)
+    authority_score: float = Field(ge=0, le=1)
+    owns_entity_kinds: list[str] = Field(default_factory=list)
+    owns_fields: list[str] = Field(default_factory=list)
+    freshness_slo_seconds: int = Field(default=86400, ge=1)
+    reconciliation_cadence_seconds: int = Field(default=86400, ge=1)
+    rate_limit_per_minute: int | None = Field(default=None, ge=1)
+    auth_profile_ref: str | None = None
+    failure_policy: str = "degrade_freshness"
+    adapter_version: str = "unversioned"
+    supports_replay: bool = False
 
 
 class ActorRef(BaseContract):
@@ -148,7 +174,11 @@ class Claim(BaseContract):
     predicate: str
     object_entity_id: UUID | None = None
     object_value: dict[str, Any] | str | float | int | bool | None = None
+    state: ClaimState = ClaimState.ASSERTED
+    valid_time_start: datetime | None = None
+    valid_time_end: datetime | None = None
     confidence: Confidence
+    source_event_id: UUID | None = None
     evidence_ids: list[UUID] = Field(default_factory=list)
     contradiction_set_id: UUID | None = None
     observed_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
@@ -281,4 +311,3 @@ class Approval(BaseContract):
 class HealthResponse(BaseContract):
     status: str = "ok"
     service: str = "pci-control-plane"
-
