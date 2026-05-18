@@ -56,6 +56,7 @@ Claim fields:
 - `subject_entity_id`
 - `predicate`
 - `object_value` or `object_entity_id`
+- `claim_state`
 - `valid_time_start`
 - `valid_time_end`
 - `observed_time`
@@ -66,6 +67,8 @@ Claim fields:
 - `evidence_ids`
 - `contradiction_set_id`
 - `created_by_workload_id`
+
+Claims move through an explicit lifecycle. See `docs/architecture/claim-lifecycle.md`.
 
 ### Evidence
 
@@ -132,6 +135,22 @@ Default storage:
 - pgvector for embeddings and semantic retrieval
 - Object storage for large artifacts, trace bundles, source snapshots, and replay packages
 - Optional graph read projection into Neo4j, Memgraph, or JanusGraph for graph-heavy enterprise workloads
+
+## Source Authority
+
+Each source system declares what it owns:
+
+- entity kinds
+- fields
+- freshness SLO
+- reconciliation cadence
+- rate limit
+- adapter version
+- auth profile reference
+- failure policy
+- replay support
+
+This keeps source-of-truth decisions out of prompt text and inside a reviewable registry.
 
 ## Graph Query Patterns
 
