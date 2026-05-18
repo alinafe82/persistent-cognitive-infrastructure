@@ -18,6 +18,16 @@ CREATE TYPE confidence_band AS ENUM (
   'contradicted'
 );
 
+CREATE TYPE claim_state AS ENUM (
+  'asserted',
+  'confirmed',
+  'drifted',
+  'contradicted',
+  'superseded',
+  'expired',
+  'retracted'
+);
+
 CREATE TYPE workload_state AS ENUM (
   'candidate',
   'rejected_low_value',
@@ -49,7 +59,14 @@ CREATE TABLE source_systems (
   owns_entity_kinds text[] NOT NULL DEFAULT ARRAY[]::text[],
   owns_fields text[] NOT NULL DEFAULT ARRAY[]::text[],
   freshness_slo_seconds integer NOT NULL DEFAULT 86400,
+  reconciliation_cadence_seconds integer NOT NULL DEFAULT 86400,
+  rate_limit_per_minute integer,
+  auth_profile_ref text,
+  failure_policy text NOT NULL DEFAULT 'degrade_freshness',
+  adapter_version text NOT NULL DEFAULT 'unversioned',
+  supports_replay boolean NOT NULL DEFAULT false,
   created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
   UNIQUE (tenant_id, name)
 );
 
@@ -157,6 +174,7 @@ CREATE TABLE claims (
   predicate text NOT NULL,
   object_entity_id uuid REFERENCES entities(entity_id) ON DELETE SET NULL,
   object_value jsonb,
+  claim_state claim_state NOT NULL DEFAULT 'asserted',
   valid_time_start timestamptz,
   valid_time_end timestamptz,
   observed_at timestamptz NOT NULL,

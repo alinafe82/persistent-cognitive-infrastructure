@@ -58,6 +58,17 @@ Example:
 7. Update confidence and contradiction sets through graph projection.
 8. Schedule follow-up workload when drift risk exceeds threshold.
 
+## Claim State Effects
+
+| Finding | Claim State Effect |
+| --- | --- |
+| `confirmed` | move active claim to `confirmed` |
+| `drifted` | move active claim to `drifted` and create a corrective claim candidate |
+| `contradicted` | move active claim to `contradicted` and attach contradiction set |
+| `source_unavailable` | keep state, degrade freshness only |
+| `not_authoritative` | keep state and record source mismatch |
+| `superseded` | move old claim to `superseded` |
+
 ## Drift Types
 
 | Drift | Meaning | Example |
@@ -83,4 +94,3 @@ Default targets:
 - Repository and deployment metadata: 30 minutes
 - Documentation and decisions: 24 hours
 - Historical compressed memory: policy-defined
-
