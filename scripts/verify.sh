@@ -22,6 +22,8 @@ required = [
     "docs/repository/public-protection.md",
     "docs/repository/public-release-checklist.md",
     "docs/repository/quality-gates.md",
+    "docs/strategy/go-to-market.md",
+    "docs/strategy/vision.md",
     "proto/pci/v1/common.proto",
     "proto/pci/v1/events.proto",
     "proto/pci/v1/graph.proto",
