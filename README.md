@@ -1,6 +1,6 @@
 # Persistent Cognitive Infrastructure
 
-PCI is an event-driven runtime for maintaining shared organizational context. It ingests external system changes, stores claims in a context graph, schedules bounded reasoning workloads, executes those workloads through governed primitives, and reconciles stored claims against source-of-truth systems.
+PCI is an event-driven runtime for maintaining accurate shared context about software systems. It ingests codebase and operational changes, stores claims in a context graph, schedules bounded verification workloads, runs those workloads through governed primitives, and reconciles stored claims against source-of-truth systems.
 
 This repository is a public, protected scaffold. It defines contracts, schemas, runtime boundaries, deployment manifests, and an initial control-plane UI. It is not a completed runtime.
 
@@ -9,16 +9,16 @@ This repository is a public, protected scaffold. It defines contracts, schemas, 
 PCI models organizational state as event-derived claims:
 
 ```text
-Source event -> graph claim -> scheduled workload -> verified outcome -> reconciliation update
+Codebase event -> graph claim -> verification workload -> verified outcome -> reconciliation update
 ```
 
 The core loop is:
 
-1. Normalize external changes into semantic events.
+1. Normalize codebase and operational changes into semantic events.
 2. Project events into entities, relationships, claims, evidence, and confidence scores.
 3. Schedule workloads when graph state changes, confidence decays, contradictions appear, or policy requires review.
-4. Assemble short-lived execution graphs from typed primitives.
-5. Execute primitives through Temporal workers, sandboxed jobs, MCP servers, model providers, and deterministic tools.
+4. Assemble short-lived verification graphs from typed primitives.
+5. Run primitives through Temporal workers, sandboxed jobs, MCP servers, model providers, and deterministic tools.
 6. Persist only semantic outcomes, evidence, lineage, approvals, and memory records.
 7. Reconcile important claims against authoritative systems.
 
@@ -37,9 +37,10 @@ LLMs can be used by PCI, but they are executors behind typed contracts. They do 
 
 ## Category Boundary
 
-PCI is not positioned as a personal assistant, chat surface, or channel gateway. It is a backend runtime for shared state:
+PCI is not positioned as a personal assistant, chat surface, channel gateway, or autonomous coding tool. It is a backend runtime for codebase accuracy and shared state:
 
 - event-sourced claims
+- codebase facts with evidence
 - evidence and provenance
 - confidence scoring
 - source authority
@@ -56,7 +57,7 @@ The repository is intended to be public. It includes MIT licensing, security rep
 
 ## Discovery Keywords
 
-Persistent Cognitive Infrastructure, cognitive infrastructure, AI infrastructure, LLMOps, context graph, semantic memory, semantic event bus, event-driven AI, cognition scheduler, reconciliation engine, confidence scoring, source-of-truth reconciliation, governed memory, model orchestration, MCP, Temporal, Kubernetes, FastAPI, Next.js, self-hosted AI, enterprise AI governance, distributed systems, observability, deterministic replay.
+Persistent Cognitive Infrastructure, codebase accuracy, codebase intelligence, cognitive infrastructure, AI infrastructure, LLMOps, context graph, semantic memory, semantic event bus, event-driven AI, cognition scheduler, reconciliation engine, confidence scoring, source-of-truth reconciliation, governed memory, model orchestration, MCP, Temporal, Kubernetes, FastAPI, Next.js, self-hosted AI, enterprise AI governance, distributed systems, observability, deterministic replay.
 
 ## Architecture
 
@@ -83,6 +84,7 @@ persistent-cognitive-infrastructure/
     repository/public-protection.md
     roadmap/mvp.md
     security/threat-model.md
+    strategy/codebase-accuracy.md
     strategy/go-to-market.md
     strategy/vision.md
   proto/pci/v1/
@@ -164,4 +166,4 @@ Not implemented yet:
 
 ## Differentiation
 
-Many adjacent systems focus on memory retrieval for model applications. PCI's narrower boundary is operational state control: source authority, claim lifecycle, policy-gated workloads, replay metadata, and reconciliation against systems of record. The runtime is useful only if it can explain what it believes, where that belief came from, how stale it is, and what would invalidate it.
+Many adjacent systems focus on memory retrieval for model applications. PCI's narrower boundary is codebase accuracy and operational state control: source authority, claim lifecycle, policy-gated verification, replay metadata, and reconciliation against systems of record. The runtime is useful only if it can explain what it believes about a codebase, where that belief came from, how stale it is, and what would invalidate it.

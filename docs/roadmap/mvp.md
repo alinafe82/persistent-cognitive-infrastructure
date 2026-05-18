@@ -28,7 +28,7 @@ Build:
 
 Done when:
 
-- valid events are accepted
+- valid codebase and operational events are accepted
 - invalid events are rejected or dead-lettered
 - a tenant stream can be replayed from offset zero
 
@@ -44,7 +44,7 @@ Build:
 
 Done when:
 
-- repository, service, deployment, incident, owner, and policy events create graph records
+- repository, manifest, dependency, API, test, deployment, incident, owner, and policy events create graph records
 - claims link to source events and evidence
 - low-confidence and contradicted claims are queryable
 
@@ -61,7 +61,7 @@ Build:
 
 Done when:
 
-- drift, incident, and low-confidence events create workloads
+- codebase drift, incident, and low-confidence events create workloads
 - dry-run output explains score, depth, primitives, approvals, and rejection reasons
 - duplicate event bursts do not create duplicate workloads
 
@@ -96,7 +96,7 @@ Build:
 
 Done when:
 
-- source changes lower or raise confidence through events
+- codebase and source-system changes lower or raise confidence through events
 - contradictions are recorded without deleting old claims
 - follow-up workloads are scheduled when drift exceeds threshold
 
@@ -119,7 +119,7 @@ Done when:
 Build:
 
 - event timeline
-- graph explorer
+- codebase graph explorer
 - workload inspector
 - confidence view
 - reconciliation findings view
@@ -128,5 +128,4 @@ Build:
 
 Done when:
 
-- an operator can inspect a claim, its evidence, confidence, source authority, reconciliation history, and workloads that changed it
-
+- an operator can inspect a codebase claim, its evidence, confidence, source authority, reconciliation history, and workloads that changed it

@@ -19,6 +19,7 @@ required = [
     "docs/api/openapi.yaml",
     "docs/architecture/claim-lifecycle.md",
     "docs/security/threat-model.md",
+    "docs/strategy/codebase-accuracy.md",
     "docs/repository/public-protection.md",
     "docs/repository/public-release-checklist.md",
     "docs/repository/quality-gates.md",
