@@ -12,8 +12,6 @@ from app.domain.models import (
     Approval,
     ApprovalDecisionRequest,
     Claim,
-    Workload,
-    WorkloadCreate,
     Entity,
     HealthResponse,
     MemoryCompressionRequest,
@@ -22,7 +20,9 @@ from app.domain.models import (
     ReplayResponse,
     SchedulerDecision,
     SemanticEventEnvelope,
+    Workload,
     WorkloadClass,
+    WorkloadCreate,
     WorkloadResponse,
 )
 from app.runtime.scheduler import WorkloadScheduler
@@ -69,7 +69,8 @@ async def metrics() -> str:
     event_count = len(store.events)
     return "\n".join(
         [
-            "# HELP pci_control_plane_workloads_total Workloads tracked by the control plane process.",
+            "# HELP pci_control_plane_workloads_total "
+            "Workloads tracked by the control plane process.",
             "# TYPE pci_control_plane_workloads_total gauge",
             f"pci_control_plane_workloads_total {workload_count}",
             "# HELP pci_control_plane_events_total Events tracked by the control plane process.",
@@ -109,7 +110,11 @@ async def list_entities(
     return {"entities": entities[: max(1, min(limit, 200))]}
 
 
-@router.get("/v1/tenants/{tenant_id}/graph/entities/{entity_id}", response_model=Entity, tags=["graph"])
+@router.get(
+    "/v1/tenants/{tenant_id}/graph/entities/{entity_id}",
+    response_model=Entity,
+    tags=["graph"],
+)
 async def get_entity(tenant_id: UUID, entity_id: UUID) -> Entity:
     entity = store.entities.get(entity_id)
     if entity is None or entity.tenant_id != tenant_id:

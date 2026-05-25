@@ -27,7 +27,9 @@ class ConfidenceCalculator:
         contradiction_penalty = self._clamp(1 - inputs.max_contradicting_confidence)
         verification = max(inputs.verification_multiplier, 0)
 
-        score = self._clamp(authority * extraction * evidence * freshness * contradiction_penalty * verification)
+        score = self._clamp(
+            authority * extraction * evidence * freshness * contradiction_penalty * verification
+        )
         return Confidence(
             score=score,
             band=self.band(score, contradiction_penalty),
@@ -55,4 +57,3 @@ class ConfidenceCalculator:
     @staticmethod
     def _clamp(value: float) -> float:
         return max(0.0, min(1.0, value))
-
