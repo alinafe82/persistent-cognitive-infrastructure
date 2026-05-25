@@ -6,7 +6,7 @@ services:
       context: ../services/control-plane
     environment:
       PCI_ENVIRONMENT: local
-      PCI_DATABASE_URL: postgresql://pci:pci@postgres:5432/pci
+      PCI_DATABASE_URL: postgresql://pci:pci@postgres:5432/pci # pragma: allowlist secret # gitleaks:allow
       PCI_NATS_URL: nats://nats:4222
       PCI_TEMPORAL_ADDRESS: temporal:7233
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
@@ -23,7 +23,7 @@ services:
     environment:
       POSTGRES_DB: pci
       POSTGRES_USER: pci
-      POSTGRES_PASSWORD: pci
+      POSTGRES_PASSWORD: pci # pragma: allowlist secret # gitleaks:allow
     ports:
       - "5432:5432"
     volumes:
@@ -58,7 +58,7 @@ services:
     environment:
       POSTGRES_DB: temporal
       POSTGRES_USER: temporal
-      POSTGRES_PASSWORD: temporal
+      POSTGRES_PASSWORD: temporal # pragma: allowlist secret # gitleaks:allow
     volumes:
       - pci-temporal-postgres:/var/lib/postgresql/data
 
@@ -68,7 +68,7 @@ services:
       DB: postgres12
       DB_PORT: 5432
       POSTGRES_USER: temporal
-      POSTGRES_PWD: temporal
+      POSTGRES_PWD: temporal # pragma: allowlist secret # gitleaks:allow
       POSTGRES_SEEDS: temporal-postgres
       DYNAMIC_CONFIG_FILE_PATH: config/dynamicconfig/development-sql.yaml
     ports:
@@ -112,7 +112,7 @@ services:
     image: grafana/grafana:11.1.0
     environment:
       GF_SECURITY_ADMIN_USER: admin
-      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin # pragma: allowlist secret # gitleaks:allow
       GF_AUTH_ANONYMOUS_ENABLED: "false"
     volumes:
       - pci-grafana:/var/lib/grafana
@@ -129,4 +129,3 @@ volumes:
   pci-temporal-postgres:
   pci-prometheus:
   pci-grafana:
-

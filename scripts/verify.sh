@@ -77,7 +77,18 @@ blocked_pitch_terms = [
     "execution mesh",
 ]
 
-excluded_parts = {".git", ".next", ".playwright-cli", "node_modules", "__pycache__"}
+excluded_parts = {
+    ".git",
+    ".mypy_cache",
+    ".next",
+    ".playwright-cli",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".venv",
+    "htmlcov",
+    "node_modules",
+    "__pycache__",
+}
 excluded_slop_files = {
     Path("scripts/verify.sh"),
     Path("frontend/control-plane/package-lock.json"),

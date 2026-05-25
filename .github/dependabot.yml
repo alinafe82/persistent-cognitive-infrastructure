@@ -1,30 +1,14 @@
 version: 2
 updates:
-  - package-ecosystem: "github-actions"
-    directory: "/"
+  - package-ecosystem: github-actions
+    directory: /
     schedule:
-      interval: "weekly"
-    labels:
-      - dependencies
-      - security
-  - package-ecosystem: "pip"
-    directory: "/services/control-plane"
+      interval: weekly
+  - package-ecosystem: pip
+    directory: /services/control-plane
     schedule:
-      interval: "weekly"
-    labels:
-      - dependencies
-      - python
-  - package-ecosystem: "npm"
-    directory: "/frontend/control-plane"
+      interval: weekly
+  - package-ecosystem: npm
+    directory: /frontend/control-plane
     schedule:
-      interval: "weekly"
-    labels:
-      - dependencies
-      - frontend
-  - package-ecosystem: "docker"
-    directory: "/services/control-plane"
-    schedule:
-      interval: "weekly"
-    labels:
-      - dependencies
-      - containers
+      interval: weekly

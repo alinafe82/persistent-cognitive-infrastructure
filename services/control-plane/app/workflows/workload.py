@@ -5,7 +5,7 @@ from datetime import timedelta
 from temporalio import workflow
 
 with workflow.unsafe.imports_passed_through():
-    from app.domain.models import ExecutionGraph, Workload, PrimitiveNode, PrimitiveType
+    from app.domain.models import ExecutionGraph, PrimitiveNode, PrimitiveType, Workload
 
 
 @workflow.defn
@@ -26,7 +26,10 @@ class WorkloadWorkflow:
             PrimitiveNode(
                 node_id="policy",
                 primitive_type=PrimitiveType.EVALUATE_POLICY,
-                input={"workload_id": str(workload.workload_id), "policy_tags": workload.policy_tags},
+                input={
+                    "workload_id": str(workload.workload_id),
+                    "policy_tags": workload.policy_tags,
+                },
             ),
             PrimitiveNode(
                 node_id="context",

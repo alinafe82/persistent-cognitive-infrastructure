@@ -5,10 +5,10 @@ from datetime import UTC, datetime
 from uuid import uuid4
 
 from app.domain.models import (
-    Workload,
     PrimitiveType,
     ReasoningDepth,
     SchedulerDecision,
+    Workload,
     WorkloadClass,
     WorkloadState,
 )
@@ -59,7 +59,11 @@ class WorkloadScheduler:
     def __init__(self, weights: SchedulerWeights | None = None) -> None:
         self.weights = weights or SchedulerWeights()
 
-    def dry_run(self, workload: Workload, signals: RuntimeSignals | None = None) -> SchedulerDecision:
+    def dry_run(
+        self,
+        workload: Workload,
+        signals: RuntimeSignals | None = None,
+    ) -> SchedulerDecision:
         active_signals = signals or self._default_signals(workload)
         components = self._score_components(active_signals)
         score = round(sum(components.values()), 4)
@@ -95,7 +99,8 @@ class WorkloadScheduler:
             "expected_value": self.weights.expected_value * self._clamp(signals.expected_value),
             "confidence_risk": self.weights.confidence_risk * self._clamp(signals.confidence_risk),
             "drift_severity": self.weights.drift_severity * self._clamp(signals.drift_severity),
-            "policy_criticality": self.weights.policy_criticality * self._clamp(signals.policy_criticality),
+            "policy_criticality": self.weights.policy_criticality
+            * self._clamp(signals.policy_criticality),
             "cost_penalty": -self.weights.normalized_cost * self._clamp(signals.normalized_cost),
             "resource_penalty": -self.weights.resource_pressure * pressure,
         }
@@ -192,4 +197,3 @@ class WorkloadScheduler:
     @staticmethod
     def _clamp(value: float) -> float:
         return max(0.0, min(1.0, value))
-

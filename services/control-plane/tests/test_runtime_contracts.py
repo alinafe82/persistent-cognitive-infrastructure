@@ -19,7 +19,7 @@ from app.runtime.reconciliation import (
     ReconciliationFindingType,
     SourceSnapshot,
 )
-from app.runtime.scheduler import RuntimeSignals, WorkloadScheduler, ResourcePressure
+from app.runtime.scheduler import ResourcePressure, RuntimeSignals, WorkloadScheduler
 
 
 def _confidence(score: float = 0.8) -> Confidence:

@@ -228,7 +228,7 @@ class Workload(BaseContract):
     deadline: datetime | None = None
 
     @classmethod
-    def from_create(cls, request: WorkloadCreate) -> "Workload":
+    def from_create(cls, request: WorkloadCreate) -> Workload:
         return cls(
             tenant_id=request.tenant_id,
             workload_class=request.workload_class,

@@ -55,9 +55,11 @@ PCI is not positioned as a personal assistant, chat surface, channel gateway, or
 
 The repository is intended to be public. It includes MIT licensing, security reporting, CODEOWNERS, CI, CodeQL, dependency review, Dependabot, branch-protection guidance, and a no-personal-email public contact rule. Security reports use `security@repowave.dev`.
 
-## Discovery Keywords
+## Search Terms
 
-Persistent Cognitive Infrastructure, codebase accuracy, codebase intelligence, cognitive infrastructure, AI infrastructure, LLMOps, context graph, semantic memory, semantic event bus, event-driven AI, cognition scheduler, reconciliation engine, confidence scoring, source-of-truth reconciliation, governed memory, model orchestration, MCP, Temporal, Kubernetes, FastAPI, Next.js, self-hosted AI, enterprise AI governance, distributed systems, observability, deterministic replay.
+Codebase accuracy, context graph, source-of-truth reconciliation, confidence scoring,
+workload scheduling, governed execution, Temporal, Kubernetes, FastAPI, Next.js, and
+observability.
 
 ## Architecture
 
@@ -71,6 +73,9 @@ Persistent Cognitive Infrastructure, codebase accuracy, codebase intelligence, c
 | Reconciliation engine | Validate graph claims against authoritative systems and update confidence |
 | Memory engine | Promote verified summaries, decisions, episodes, and abstractions with provenance |
 | Governance layer | Enforce tenant isolation, access policy, approvals, audit, secrets isolation, and data routing |
+
+See [docs/architecture.md](docs/architecture.md) for the shorter portfolio-oriented
+architecture summary.
 
 ## Repository Map
 
@@ -167,3 +172,7 @@ Not implemented yet:
 ## Differentiation
 
 Many adjacent systems focus on memory retrieval for model applications. PCI's narrower boundary is codebase accuracy and operational state control: source authority, claim lifecycle, policy-gated verification, replay metadata, and reconciliation against systems of record. The runtime is useful only if it can explain what it believes about a codebase, where that belief came from, how stale it is, and what would invalidate it.
+
+## Interview Notes
+
+See [docs/interview-notes.md](docs/interview-notes.md).
