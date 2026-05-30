@@ -84,12 +84,15 @@ excluded_parts = {
     ".playwright-cli",
     ".pytest_cache",
     ".ruff_cache",
+    ".uv-cache",
     ".venv",
     "htmlcov",
-    "node_modules",
     "__pycache__",
+    "node_modules",
+    "pci_control_plane.egg-info",
 }
 excluded_slop_files = {
+    Path("AGENTS.md"),
     Path("scripts/verify.sh"),
     Path("frontend/control-plane/package-lock.json"),
 }
@@ -111,5 +114,5 @@ for path in Path(".").rglob("*"):
                 if term in lowered:
                     raise SystemExit(f"blocked pitch term {term!r} found in {path}")
 
-print("PCI scaffold verification passed")
+print("PCI runtime verification passed")
 PY

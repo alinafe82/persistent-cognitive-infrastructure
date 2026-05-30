@@ -2,7 +2,7 @@
 
 PCI is an event-driven runtime for maintaining accurate shared context about software systems. It ingests codebase and operational changes, stores claims in a context graph, schedules bounded verification workloads, runs those workloads through governed primitives, and reconciles stored claims against source-of-truth systems.
 
-This repository is a public, protected scaffold. It defines contracts, schemas, runtime boundaries, deployment manifests, and an initial control-plane UI. It is not a completed runtime.
+This repository contains a runnable local control-plane runtime, public contracts, schemas, deployment manifests, and a Next.js UI backed by the control-plane API. The local runtime uses in-memory repositories; production durability, connectors, and worker pools remain separate implementation work.
 
 ## What PCI Is
 
@@ -115,7 +115,7 @@ Run the local services:
 docker compose -f deployments/docker-compose.yml up --build
 ```
 
-Run scaffold verification:
+Run runtime verification:
 
 ```bash
 scripts/verify.sh
@@ -147,7 +147,7 @@ Implemented:
 - protobuf contracts
 - JSON schemas
 - Postgres graph schema
-- FastAPI control-plane shell
+- FastAPI control-plane API with in-memory event projection, workload admission, approvals, and replay bundles
 - workload scheduler, confidence, reconciliation, and memory runtime modules
 - claim lifecycle and source-authority contracts
 - runtime regression tests
@@ -156,18 +156,18 @@ Implemented:
 - Kubernetes manifests
 - Helm chart
 - observability configs
-- Next.js control-plane UI demo
+- Next.js control-plane UI backed by the API snapshot endpoint
 
 Not implemented yet:
 
 - durable database repositories behind the API
 - NATS event publisher and consumers
-- graph projector workers
+- external graph projector workers
 - production policy engine integration
 - real connector adapters
 - model gateway
 - sandbox worker pool
-- persisted replay bundles
+- persisted replay bundle storage
 
 ## Differentiation
 

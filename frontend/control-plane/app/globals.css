@@ -1,10 +1,20 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #171717;
+  --color-graphite: #3f4148;
+  --color-field: #f5f6f4;
+  --color-line: #d8dad4;
+  --color-signal: #0f766e;
+  --color-warning: #b45309;
+  --color-danger: #b91c1c;
+  --font-sans: Geist, Aptos, "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", Menlo, monospace;
+}
 
 :root {
   color-scheme: light;
-  background: #f5f6f4;
+  background: #f4f5f1;
   color: #171717;
 }
 
@@ -20,11 +30,12 @@ body {
 body {
   margin: 0;
   background:
+    radial-gradient(circle at 18% 0%, rgba(15, 118, 110, 0.08), transparent 28rem),
     linear-gradient(90deg, rgba(23, 23, 23, 0.035) 1px, transparent 1px),
     linear-gradient(180deg, rgba(23, 23, 23, 0.03) 1px, transparent 1px),
-    #f5f6f4;
-  background-size: 24px 24px;
-  font-family: Inter, Arial, sans-serif;
+    #f4f5f1;
+  background-size: 100% 100%, 24px 24px, 24px 24px, auto;
+  font-family: Geist, Aptos, "Segoe UI", system-ui, sans-serif;
 }
 
 button,
@@ -37,6 +48,7 @@ select {
   border: 1px solid #d8dad4;
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.84);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.68), 0 18px 44px -32px rgba(45, 53, 48, 0.38);
 }
 
 .metric-label {
@@ -46,3 +58,6 @@ select {
   text-transform: uppercase;
 }
 
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}

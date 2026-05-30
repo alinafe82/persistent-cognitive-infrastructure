@@ -66,6 +66,18 @@ class WorkloadState(StrEnum):
     SUPERSEDED = "superseded"
 
 
+class ReplayMode(StrEnum):
+    GRAPH = "graph"
+    WORKLOAD = "workload"
+    LINEAGE = "lineage"
+
+
+class ApprovalState(StrEnum):
+    REQUESTED = "requested"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+
+
 class PrimitiveType(StrEnum):
     RETRIEVE_CONTEXT = "retrieve_context"
     EVALUATE_POLICY = "evaluate_policy"
@@ -147,7 +159,7 @@ class SemanticEventEnvelope(BaseContract):
     payload: dict[str, Any]
     payload_hash: str = Field(pattern=r"^sha256:[a-f0-9]{64}$")
 
-    @field_validator("observed_at", "published_at")
+    @field_validator("occurred_at", "observed_at", "published_at")
     @classmethod
     def require_timezone(cls, value: datetime) -> datetime:
         if value.tzinfo is None:
@@ -247,6 +259,7 @@ class WorkloadResponse(BaseContract):
     tenant_id: UUID
     state: WorkloadState
     decision: SchedulerDecision
+    approvals: list[Approval] = Field(default_factory=list)
 
 
 class PrimitiveNode(BaseContract):
@@ -270,13 +283,19 @@ class ExecutionGraph(BaseContract):
 
 
 class ReplayRequest(BaseContract):
-    mode: str
+    mode: ReplayMode
     include_artifacts: bool = False
 
 
 class ReplayResponse(BaseContract):
     replay_id: UUID = Field(default_factory=uuid4)
-    state: str = "requested"
+    workload_id: UUID
+    mode: ReplayMode
+    state: str = "ready"
+    event_count: int = Field(default=0, ge=0)
+    entity_count: int = Field(default=0, ge=0)
+    claim_count: int = Field(default=0, ge=0)
+    artifacts: dict[str, Any] = Field(default_factory=dict)
 
 
 class ReconciliationRequest(BaseContract):
@@ -294,7 +313,7 @@ class MemoryCompressionRequest(BaseContract):
 
 
 class ApprovalDecisionRequest(BaseContract):
-    decision: str
+    decision: ApprovalState
     reason: str = Field(min_length=3)
 
 
@@ -303,7 +322,7 @@ class Approval(BaseContract):
     tenant_id: UUID
     workload_id: UUID
     approval_class: str
-    state: str = "requested"
+    state: ApprovalState = ApprovalState.REQUESTED
     reason: str | None = None
     decided_at: datetime | None = None
 
@@ -311,3 +330,11 @@ class Approval(BaseContract):
 class HealthResponse(BaseContract):
     status: str = "ok"
     service: str = "pci-control-plane"
+
+
+class EventIngestResponse(BaseContract):
+    event_id: UUID
+    accepted: bool
+    stream: str
+    projected_entities: int = Field(default=0, ge=0)
+    projected_claims: int = Field(default=0, ge=0)

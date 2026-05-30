@@ -28,7 +28,12 @@ class ConfidenceCalculator:
         verification = max(inputs.verification_multiplier, 0)
 
         score = self._clamp(
-            authority * extraction * evidence * freshness * contradiction_penalty * verification
+            authority
+            * extraction
+            * evidence
+            * freshness
+            * contradiction_penalty
+            * verification
         )
         return Confidence(
             score=score,
