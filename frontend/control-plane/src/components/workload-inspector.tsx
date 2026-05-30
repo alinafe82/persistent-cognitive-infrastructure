@@ -13,7 +13,7 @@ export function WorkloadInspector({ workloads }: Props) {
         <Activity className="h-4 w-4 text-graphite" aria-hidden="true" />
       </div>
       <div className="divide-y divide-line">
-        {workloads.map((workload) => (
+        {workloads.length ? workloads.map((workload) => (
           <article key={workload.id} className="p-4">
             <div className="flex items-start justify-between gap-4">
               <div>
@@ -39,7 +39,9 @@ export function WorkloadInspector({ workloads }: Props) {
               ))}
             </div>
           </article>
-        ))}
+        )) : (
+          <div className="px-4 py-6 text-sm text-graphite">No workloads admitted yet.</div>
+        )}
       </div>
     </section>
   );

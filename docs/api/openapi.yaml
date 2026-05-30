@@ -41,6 +41,17 @@ paths:
           $ref: "#/components/responses/BadRequest"
         "403":
           $ref: "#/components/responses/Forbidden"
+  /v1/control-plane/ui-state:
+    get:
+      operationId: getControlPlaneUiState
+      summary: Read the current control-plane UI projection.
+      responses:
+        "200":
+          description: Current in-memory UI projection.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ControlPlaneUiState"
   /v1/tenants/{tenant_id}/graph/entities:
     get:
       operationId: listEntities
@@ -173,6 +184,28 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/WorkloadResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /v1/workloads/{workload_id}/approvals:
+    get:
+      operationId: listWorkloadApprovals
+      summary: List governance approvals for a workload.
+      parameters:
+        - $ref: "#/components/parameters/WorkloadId"
+      responses:
+        "200":
+          description: Workload approvals.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - approvals
+                properties:
+                  approvals:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Approval"
         "404":
           $ref: "#/components/responses/NotFound"
   /v1/workloads/{workload_id}/replay:
@@ -453,6 +486,40 @@ components:
           type: boolean
         stream:
           type: string
+        projected_entities:
+          type: integer
+          minimum: 0
+        projected_claims:
+          type: integer
+          minimum: 0
+    ControlPlaneUiState:
+      type: object
+      required:
+        - graphNodes
+        - graphLinks
+        - semanticEvents
+        - workloads
+      properties:
+        graphNodes:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        graphLinks:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        semanticEvents:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        workloads:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
     Entity:
       type: object
       required:
@@ -620,6 +687,10 @@ components:
           type: string
         decision:
           $ref: "#/components/schemas/SchedulerDecision"
+        approvals:
+          type: array
+          items:
+            $ref: "#/components/schemas/Approval"
     ReplayRequest:
       type: object
       required:
@@ -628,12 +699,9 @@ components:
         mode:
           type: string
           enum:
-            - lineage_only
-            - deterministic
-            - model_observed
-            - model_live
-            - source_snapshot
-            - source_live
+            - graph
+            - workload
+            - lineage
         include_artifacts:
           type: boolean
           default: false
@@ -641,13 +709,36 @@ components:
       type: object
       required:
         - replay_id
+        - workload_id
+        - mode
         - state
       properties:
         replay_id:
           type: string
           format: uuid
+        workload_id:
+          type: string
+          format: uuid
+        mode:
+          type: string
+          enum:
+            - graph
+            - workload
+            - lineage
         state:
           type: string
+        event_count:
+          type: integer
+          minimum: 0
+        entity_count:
+          type: integer
+          minimum: 0
+        claim_count:
+          type: integer
+          minimum: 0
+        artifacts:
+          type: object
+          additionalProperties: true
     ReconciliationRequest:
       type: object
       required:
@@ -712,12 +803,26 @@ components:
       type: object
       required:
         - approval_id
+        - tenant_id
+        - workload_id
+        - approval_class
         - state
       properties:
         approval_id:
           type: string
           format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        workload_id:
+          type: string
+          format: uuid
+        approval_class:
+          type: string
         state:
           type: string
         reason:
           type: string
+        decided_at:
+          type: string
+          format: date-time

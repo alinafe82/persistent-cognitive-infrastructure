@@ -1,7 +1,7 @@
 export type GraphNode = {
   id: string;
   label: string;
-  kind: "service" | "policy" | "incident" | "deployment" | "memory" | "repository";
+  kind: string;
   confidence: number;
 };
 
@@ -28,3 +28,10 @@ export type Workload = {
   primitives: string[];
 };
 
+export type ControlPlaneState = {
+  graphNodes: GraphNode[];
+  graphLinks: GraphLink[];
+  semanticEvents: SemanticEvent[];
+  workloads: Workload[];
+  error?: string;
+};

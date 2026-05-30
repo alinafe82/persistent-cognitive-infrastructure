@@ -14,7 +14,7 @@ type SimLink = d3.SimulationLinkDatum<SimNode> & {
   predicate: string;
 };
 
-const nodeColors: Record<GraphNode["kind"], string> = {
+const nodeColors: Record<string, string> = {
   service: "#0F766E",
   policy: "#5B4DB7",
   incident: "#B91C1C",
@@ -22,6 +22,7 @@ const nodeColors: Record<GraphNode["kind"], string> = {
   memory: "#2563EB",
   repository: "#3F4148"
 };
+const fallbackNodeColor = "#3F4148";
 
 export function ContextGraph({ nodes, links }: Props) {
   const svgRef = useRef<SVGSVGElement | null>(null);
@@ -32,6 +33,8 @@ export function ContextGraph({ nodes, links }: Props) {
   );
 
   useEffect(() => {
+    if (!svgRef.current || !simulationNodes.length) return;
+
     const svg = d3.select(svgRef.current);
     svg.selectAll("*").remove();
 
@@ -84,7 +87,7 @@ export function ContextGraph({ nodes, links }: Props) {
     node
       .append("circle")
       .attr("r", (datum) => 16 + datum.confidence * 10)
-      .attr("fill", (datum) => nodeColors[datum.kind])
+      .attr("fill", (datum) => nodeColors[datum.kind] ?? fallbackNodeColor)
       .attr("fill-opacity", 0.88);
 
     node
@@ -117,7 +120,19 @@ export function ContextGraph({ nodes, links }: Props) {
         <h2 className="text-sm font-semibold text-ink">Context Graph</h2>
         <span className="font-mono text-xs text-graphite">{nodes.length} entities</span>
       </div>
-      <svg ref={svgRef} viewBox="0 0 720 420" className="h-[420px] w-full" role="img" />
+      {nodes.length ? (
+        <svg
+          ref={svgRef}
+          viewBox="0 0 720 420"
+          className="h-[420px] w-full"
+          role="img"
+          aria-label="Projected context graph"
+        />
+      ) : (
+        <div className="flex h-[420px] items-center justify-center px-4 text-center text-sm text-graphite">
+          No projected entities yet.
+        </div>
+      )}
     </div>
   );
 }

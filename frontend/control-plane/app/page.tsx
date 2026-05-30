@@ -2,27 +2,27 @@ import { ConfidenceHeatmap } from "@/components/confidence-heatmap";
 import { ContextGraph } from "@/components/context-graph";
 import { EventTimeline } from "@/components/event-timeline";
 import { WorkloadInspector } from "@/components/workload-inspector";
-import { graphLinks, graphNodes, semanticEvents, workloads } from "@/lib/demo-data";
+import { loadControlPlaneState } from "@/lib/control-plane";
 import { DatabaseZap, Gauge, RadioTower, Shield } from "lucide-react";
 
-const averageConfidence = Math.round(
-  (graphNodes.reduce((total, node) => total + node.confidence, 0) / graphNodes.length) * 100
-);
+export default async function Home() {
+  const { graphLinks, graphNodes, semanticEvents, workloads, error } = await loadControlPlaneState();
+  const averageConfidence = graphNodes.length
+    ? Math.round((graphNodes.reduce((total, node) => total + node.confidence, 0) / graphNodes.length) * 100)
+    : 0;
+  const metrics = [
+    { label: "events", value: String(semanticEvents.length), icon: RadioTower },
+    { label: "entities", value: String(graphNodes.length), icon: DatabaseZap },
+    { label: "avg confidence", value: `${averageConfidence}%`, icon: Gauge },
+    { label: "workloads", value: String(workloads.length), icon: Shield }
+  ];
 
-const metrics = [
-  { label: "demo events", value: String(semanticEvents.length), icon: RadioTower },
-  { label: "demo entities", value: String(graphNodes.length), icon: DatabaseZap },
-  { label: "avg confidence", value: `${averageConfidence}%`, icon: Gauge },
-  { label: "demo workloads", value: String(workloads.length), icon: Shield }
-];
-
-export default function Home() {
   return (
     <main className="min-h-screen px-5 py-5 lg:px-8">
       <header className="mb-5 flex flex-col gap-4 border-b border-line pb-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="font-mono text-xs uppercase text-graphite">Persistent Cognitive Infrastructure</p>
-          <h1 className="mt-1 text-2xl font-semibold text-ink lg:text-3xl">Control Plane Demo</h1>
+          <h1 className="mt-1 text-2xl font-semibold text-ink lg:text-3xl">Control Plane</h1>
         </div>
         <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
           {metrics.map((metric) => (
@@ -36,6 +36,10 @@ export default function Home() {
           ))}
         </div>
       </header>
+
+      {error ? (
+        <div className="mb-5 rounded-md border border-danger/30 bg-white px-4 py-3 text-sm text-danger">{error}</div>
+      ) : null}
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.65fr)]">
         <ContextGraph nodes={graphNodes} links={graphLinks} />
