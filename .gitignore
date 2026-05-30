@@ -25,3 +25,6 @@ coverage/
 replay-bundles/
 tenant-data/
 source-snapshots/
+
+# Local architecture-agent context. Do not publish.
+.specs/
