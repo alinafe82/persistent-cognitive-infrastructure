@@ -81,6 +81,7 @@ def test_event_ingest_projects_graph_state_and_ui_snapshot() -> None:
         ui_state = await control_plane_ui_state()
         assert ui_state["graphNodes"]
         assert ui_state["semanticEvents"][0]["label"] == "repository default branch confirmed"
+        assert ui_state["insights"][0]["id"] in {"runtime-clear", "graph-coverage"}
 
     asyncio.run(exercise())
 
@@ -121,6 +122,10 @@ def test_workload_admission_materializes_approval_and_replay_bundle() -> None:
         assert replay.entity_count == 1
         assert replay.claim_count == 1
         assert replay.artifacts["event_ids"] == [str(event_response.event_id)]
+
+        ui_state = await control_plane_ui_state()
+        assert ui_state["insights"][0]["id"] == "approval-queue"
+        assert ui_state["insights"][0]["severity"] == "critical"
 
     asyncio.run(exercise())
 

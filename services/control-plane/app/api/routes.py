@@ -11,6 +11,7 @@ from app.core.config import settings
 from app.domain.models import (
     Approval,
     ApprovalDecisionRequest,
+    ApprovalState,
     Claim,
     ClaimState,
     Confidence,
@@ -29,6 +30,7 @@ from app.domain.models import (
     WorkloadClass,
     WorkloadCreate,
     WorkloadResponse,
+    WorkloadState,
 )
 from app.runtime.scheduler import WorkloadScheduler
 
@@ -203,7 +205,184 @@ class InMemoryControlPlaneStore:
                 for workload in workloads
                 if workload.workload_id in self.decisions
             ],
+            "insights": self._decision_insights(entities, claims, events, workloads),
         }
+
+    def _decision_insights(
+        self,
+        entities: list[Entity],
+        claims: list[Claim],
+        events: list[SemanticEventEnvelope],
+        workloads: list[Workload],
+    ) -> list[dict[str, object]]:
+        insights: list[dict[str, object]] = []
+
+        pending_approvals = [
+            approval
+            for approval in self.approvals.values()
+            if approval.state == ApprovalState.REQUESTED
+        ]
+        if pending_approvals:
+            blocked_workloads = {
+                approval.workload_id
+                for approval in pending_approvals
+                if approval.workload_id in self.workloads
+            }
+            blocked_count = len(blocked_workloads)
+            insights.append(
+                {
+                    "id": "approval-queue",
+                    "severity": "critical",
+                    "title": f"{len(pending_approvals)} approval request"
+                    f"{'' if len(pending_approvals) == 1 else 's'} waiting",
+                    "detail": f"{blocked_count} admitted workload"
+                    f"{'' if blocked_count == 1 else 's'} cannot proceed until "
+                    "governance responds.",
+                    "action": "Review requested approvals before admitting deeper runs.",
+                    "confidence": 0.98,
+                    "signalCount": len(pending_approvals),
+                }
+            )
+
+        critical_events = [
+            event for event in events if self._event_severity(event) == "critical"
+        ]
+        if critical_events:
+            latest = critical_events[0]
+            insights.append(
+                {
+                    "id": "restricted-data",
+                    "severity": "critical",
+                    "title": "Restricted or regulated data entered the runtime",
+                    "detail": f"Latest critical signal: {self._event_label(latest)}.",
+                    "action": "Limit replay scope and require policy evaluation.",
+                    "confidence": latest.source.authority_score,
+                    "signalCount": len(critical_events),
+                }
+            )
+
+        low_confidence_entities = [
+            entity for entity in entities if entity.confidence.score < 0.55
+        ]
+        low_confidence_claims = [
+            claim for claim in claims if claim.confidence.score < 0.55
+        ]
+        if low_confidence_entities or low_confidence_claims:
+            weakest_entity = min(
+                low_confidence_entities,
+                key=lambda entity: entity.confidence.score,
+                default=None,
+            )
+            weakest_claim = min(
+                low_confidence_claims,
+                key=lambda claim: claim.confidence.score,
+                default=None,
+            )
+            weakest_score = min(
+                [
+                    item.confidence.score
+                    for item in [weakest_entity, weakest_claim]
+                    if item is not None
+                ],
+                default=0,
+            )
+            label = (
+                weakest_entity.canonical_name
+                if weakest_entity is not None
+                else "a projected claim"
+            )
+            insights.append(
+                {
+                    "id": "confidence-floor",
+                    "severity": "warning",
+                    "title": "Confidence floor is below review threshold",
+                    "detail": f"{label} is carrying {round(weakest_score * 100)}% confidence.",
+                    "action": "Run reconciliation before high-impact reasoning.",
+                    "confidence": max(0.6, 1 - weakest_score),
+                    "signalCount": len(low_confidence_entities) + len(low_confidence_claims),
+                }
+            )
+
+        claimed_entity_ids = {
+            claim.subject_entity_id for claim in claims
+        } | {
+            claim.object_entity_id for claim in claims if claim.object_entity_id is not None
+        }
+        isolated_entities = [
+            entity for entity in entities if entity.entity_id not in claimed_entity_ids
+        ]
+        if isolated_entities and claims:
+            insights.append(
+                {
+                    "id": "graph-coverage",
+                    "severity": "warning",
+                    "title": "Graph context has isolated entities",
+                    "detail": f"{len(isolated_entities)} of {len(entities)} entities have "
+                    "no projected claim edges.",
+                    "action": "Ingest relation claims or schedule reconciliation.",
+                    "confidence": 0.86,
+                    "signalCount": len(isolated_entities),
+                }
+            )
+
+        stalled_workloads = [
+            workload
+            for workload in workloads
+            if workload.state
+            in {
+                WorkloadState.DEFERRED_BUDGET,
+                WorkloadState.DEFERRED_CAPACITY,
+                WorkloadState.REJECTED_LOW_VALUE,
+                WorkloadState.REJECTED_POLICY,
+                WorkloadState.FAILED,
+            }
+        ]
+        if stalled_workloads:
+            latest_stalled = stalled_workloads[0]
+            insights.append(
+                {
+                    "id": "workload-stalls",
+                    "severity": "warning",
+                    "title": "Scheduler is refusing or deferring work",
+                    "detail": f"Latest stalled workload is {latest_stalled.state.value}.",
+                    "action": "Inspect scheduler score components before retrying the objective.",
+                    "confidence": 0.9,
+                    "signalCount": len(stalled_workloads),
+                }
+            )
+
+        if not insights:
+            title = (
+                "Runtime is ready for semantic input"
+                if not events
+                else "Runtime state is coherent"
+            )
+            detail = (
+                "Ingest events, entities, and workloads to activate the decision queue."
+                if not events
+                else "No approval, risk, confidence, or coverage issue is above threshold."
+            )
+            insights.append(
+                {
+                    "id": "runtime-clear",
+                    "severity": "normal",
+                    "title": title,
+                    "detail": detail,
+                    "action": "Continue monitoring projected context and admitted workloads.",
+                    "confidence": 0.82,
+                    "signalCount": 0,
+                }
+            )
+
+        severity_rank = {"critical": 0, "warning": 1, "normal": 2}
+        return sorted(
+            insights,
+            key=lambda insight: (
+                severity_rank[str(insight["severity"])],
+                -float(insight["confidence"]),
+                -int(insight["signalCount"]),
+            ),
+        )[:5]
 
     def _materialize_approvals(
         self,

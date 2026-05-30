@@ -12,10 +12,9 @@ const config: Config = {
         signal: "#0F766E",
         warning: "#B45309",
         danger: "#B91C1C",
-        violet: "#5B4DB7"
       },
       fontFamily: {
-        sans: ["Inter", "Arial", "sans-serif"],
+        sans: ["Geist", "Aptos", "Segoe UI", "system-ui", "sans-serif"],
         mono: ["IBM Plex Mono", "Menlo", "monospace"]
       }
     }
@@ -24,4 +23,3 @@ const config: Config = {
 };
 
 export default config;
-

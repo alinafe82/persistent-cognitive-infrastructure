@@ -16,10 +16,10 @@ type SimLink = d3.SimulationLinkDatum<SimNode> & {
 
 const nodeColors: Record<string, string> = {
   service: "#0F766E",
-  policy: "#5B4DB7",
+  policy: "#7A5149",
   incident: "#B91C1C",
   deployment: "#B45309",
-  memory: "#2563EB",
+  memory: "#2F6B73",
   repository: "#3F4148"
 };
 const fallbackNodeColor = "#3F4148";

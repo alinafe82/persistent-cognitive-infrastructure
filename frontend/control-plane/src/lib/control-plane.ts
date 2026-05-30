@@ -4,7 +4,8 @@ const EMPTY_STATE: ControlPlaneState = {
   graphNodes: [],
   graphLinks: [],
   semanticEvents: [],
-  workloads: []
+  workloads: [],
+  insights: []
 };
 
 function controlPlaneUrl(): string {
@@ -29,7 +30,8 @@ export async function loadControlPlaneState(): Promise<ControlPlaneState> {
       graphNodes: payload.graphNodes ?? [],
       graphLinks: payload.graphLinks ?? [],
       semanticEvents: payload.semanticEvents ?? [],
-      workloads: payload.workloads ?? []
+      workloads: payload.workloads ?? [],
+      insights: payload.insights ?? []
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
