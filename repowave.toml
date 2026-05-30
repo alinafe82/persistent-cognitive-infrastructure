@@ -1,0 +1,11 @@
+# RepoWave local scan profile.
+schema_version = 1
+
+[scan]
+min_severity = "low"
+fail_on = "critical"
+autofix = false
+
+[local_context]
+directory = ".specs"
+publish = false
