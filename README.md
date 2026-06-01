@@ -6,19 +6,36 @@ This repo holds a runnable local control plane (FastAPI, in-memory repositories)
 
 ## Five-minute local demo
 
+In one terminal, start the local stack and leave it running:
+
 ```bash
 docker compose -f deployments/docker-compose.yml up --build
-# wait for the control plane to come up at http://localhost:8080
+```
+
+In a second terminal, run the static-and-structural verifier:
+
+```bash
 scripts/verify.sh
 ```
 
-What that exercises:
+What `scripts/verify.sh` actually does: `python -m compileall`, repository-shape checks (required directories, OpenAPI/JSON-schema validity), and a guard against pitch-style language in the README. It does **not** hit `localhost:8080` or run the API regression suite in `services/control-plane/tests`. Treat a passing verifier as evidence of structural sanity, not live runtime health.
 
-- the control-plane FastAPI app boots with the in-memory repositories.
-- `scripts/verify.sh` runs the runtime regression set against the live API.
-- the UI at `http://localhost:3000` reads the same API snapshot endpoint the verifier uses.
+For live API testing run the control-plane suite directly:
 
-What it does not exercise: Temporal worker pools, NATS publishing, durable Postgres, real connectors, the model gateway. Those are listed below and intentionally not yet implemented.
+```bash
+cd services/control-plane
+pytest -q
+```
+
+For the UI (separate process, not part of `docker compose` above):
+
+```bash
+cd frontend/control-plane
+npm install
+npm run dev
+```
+
+What is not exercised by any of the above: Temporal worker pools, NATS publishing, durable Postgres, real connectors, the model gateway. Those are listed in "Current implementation status" and intentionally not yet implemented.
 
 ## What PCI Is
 
