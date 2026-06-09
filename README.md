@@ -1,8 +1,41 @@
 # Persistent Cognitive Infrastructure
 
-PCI is an event-driven runtime for maintaining accurate shared context about software systems. It ingests codebase and operational changes, stores claims in a context graph, schedules bounded verification workloads, runs those workloads through governed primitives, and reconciles stored claims against source-of-truth systems.
+An event-driven runtime that maintains accurate shared context about a software system. It ingests codebase and operational changes, stores them as claims with evidence and confidence, schedules verification workloads when the graph state changes, runs those workloads through typed primitives, and reconciles its claims against source-of-truth systems.
 
-This repository contains a runnable local control-plane runtime, public contracts, schemas, deployment manifests, and a Next.js UI backed by the control-plane API. The local runtime uses in-memory repositories; production durability, connectors, and worker pools remain separate implementation work.
+This repo holds a runnable local control plane (FastAPI, in-memory repositories), the public contracts (OpenAPI, protobuf, JSON schemas, Postgres DDL), deployment manifests (Docker Compose, Kubernetes, Helm), and a Next.js UI backed by the control-plane API. Production durability, connectors, and worker pools are explicitly not in this repository yet; the "Current implementation status" section below lists the boundary.
+
+## Five-minute local demo
+
+In one terminal, start the local stack and leave it running:
+
+```bash
+docker compose -f deployments/docker-compose.yml up --build
+```
+
+In a second terminal, run the static-and-structural verifier:
+
+```bash
+scripts/verify.sh
+```
+
+What `scripts/verify.sh` actually does: `python -m compileall`, repository-shape checks (required directories, OpenAPI/JSON-schema validity), and a guard against pitch-style language in the README. It does **not** hit `localhost:8080` or run the API regression suite in `services/control-plane/tests`. Treat a passing verifier as evidence of structural sanity, not live runtime health.
+
+For live API testing run the control-plane suite directly:
+
+```bash
+cd services/control-plane
+pytest -q
+```
+
+For the UI (separate process, not part of `docker compose` above):
+
+```bash
+cd frontend/control-plane
+npm install
+npm run dev
+```
+
+What is not exercised by any of the above: Temporal worker pools, NATS publishing, durable Postgres, real connectors, the model gateway. Those are listed in "Current implementation status" and intentionally not yet implemented.
 
 ## What PCI Is
 
@@ -171,7 +204,9 @@ Not implemented yet:
 
 ## Differentiation
 
-Many adjacent systems focus on memory retrieval for model applications. PCI's narrower boundary is codebase accuracy and operational state control: source authority, claim lifecycle, policy-gated verification, replay metadata, and reconciliation against systems of record. The runtime is useful only if it can explain what it believes about a codebase, where that belief came from, how stale it is, and what would invalidate it.
+Most adjacent systems are memory retrieval for model applications. PCI's narrower boundary is codebase accuracy and operational state control: source authority, claim lifecycle, policy-gated verification, replay metadata, and reconciliation against systems of record. The runtime earns its keep when it can explain what it believes about a codebase, where that belief came from, how stale it is, and what would invalidate it.
+
+If those four questions are not interesting to your problem, you do not need this. Use a vector store and call it done.
 
 ## Interview Notes
 
