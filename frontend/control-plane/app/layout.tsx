@@ -16,6 +16,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <script
+          defer
+          src="https://theusefulweb.app/visit-tracker.js"
+          data-site="pci-control-plane"
+        />
+      </head>
       <body>{children}</body>
     </html>
   );

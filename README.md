@@ -1,5 +1,13 @@
 # Persistent Cognitive Infrastructure
 
+## At a Glance
+
+- **Use case:** Maintain accurate shared context about software systems with an event-driven local control-plane prototype.
+- **Audience:** AI infrastructure, codebase intelligence, and developer-tooling teams exploring durable context graphs.
+- **Current state:** Prototype with local in-process control plane; durable storage and external connectors are not yet implemented.
+- **Start here:** Read the architecture notes, then run the local service checks before extending connectors.
+
+
 An event-driven runtime that maintains accurate shared context about a software system. It ingests codebase and operational changes, stores them as claims with evidence and confidence, schedules verification workloads when the graph state changes, runs those workloads through typed primitives, and reconciles its claims against source-of-truth systems.
 
 This repo holds a runnable local control plane (FastAPI, in-memory repositories), the public contracts (OpenAPI, protobuf, JSON schemas, Postgres DDL), deployment manifests (Docker Compose, Kubernetes, Helm), and a Next.js UI backed by the control-plane API. Production durability, connectors, and worker pools are explicitly not in this repository yet; the "Current implementation status" section below lists the boundary.
