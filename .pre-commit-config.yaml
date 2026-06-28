@@ -10,3 +10,18 @@ repos:
     rev: v1.5.0
     hooks:
       - id: detect-secrets
+  - repo: local
+    hooks:
+      - id: frontend-control-plane-lint
+        name: Frontend control-plane lint
+        entry: bash -lc 'cd frontend/control-plane && npm run lint'
+        language: system
+        pass_filenames: false
+        files: ^frontend/control-plane/
+      - id: frontend-control-plane-test
+        name: Frontend control-plane tests
+        entry: bash -lc 'cd frontend/control-plane && npm run test:coverage'
+        language: system
+        pass_filenames: false
+        stages: [push]
+        files: ^frontend/control-plane/

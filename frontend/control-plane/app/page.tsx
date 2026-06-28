@@ -11,10 +11,13 @@ function clampConfidence(score: number): number {
 }
 
 export default async function Home() {
-  const { graphLinks, graphNodes, semanticEvents, workloads, insights, error } = await loadControlPlaneState();
+  const { graphLinks, graphNodes, semanticEvents, workloads, insights, error } =
+    await loadControlPlaneState();
   const averageConfidence = graphNodes.length
     ? Math.round(
-        (graphNodes.reduce((total, node) => total + clampConfidence(node.confidence), 0) / graphNodes.length) * 100
+        (graphNodes.reduce((total, node) => total + clampConfidence(node.confidence), 0) /
+          graphNodes.length) *
+          100
       )
     : 0;
   const attentionCount = insights.filter((insight) => insight.severity !== "normal").length;
@@ -22,7 +25,7 @@ export default async function Home() {
     { label: "events", value: String(semanticEvents.length), icon: RadioTower },
     { label: "entities", value: String(graphNodes.length), icon: DatabaseZap },
     { label: "avg confidence", value: `${averageConfidence}%`, icon: Gauge },
-    { label: "attention", value: String(attentionCount), icon: Shield }
+    { label: "attention", value: String(attentionCount), icon: Shield },
   ];
 
   return (
@@ -46,7 +49,9 @@ export default async function Home() {
       </header>
 
       {error ? (
-        <div className="mb-5 rounded-md border border-danger/30 bg-white px-4 py-3 text-sm text-danger">{error}</div>
+        <div className="mb-5 rounded-md border border-danger/30 bg-white px-4 py-3 text-sm text-danger">
+          {error}
+        </div>
       ) : null}
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.65fr)]">
@@ -63,6 +68,27 @@ export default async function Home() {
         <ConfidenceHeatmap nodes={graphNodes} />
         <WorkloadInspector workloads={workloads} />
       </div>
+
+      <section className="panel mt-5 grid gap-4 px-5 py-4 lg:grid-cols-[1fr_auto] lg:items-center">
+        <div>
+          <p className="font-mono text-xs uppercase text-graphite">Consulting surface</p>
+          <h2 className="mt-1 text-xl font-semibold text-ink">
+            Need this pattern reviewed for your platform?
+          </h2>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-graphite">
+            The practical revenue path is lead generation for architecture reviews, implementation planning, and
+            sponsored developer-tooling research. Display ads are not part of the control-plane UI by default.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <a className="rounded-md border border-line px-3 py-2 text-sm font-medium text-ink" href="/contact">
+            Contact
+          </a>
+          <a className="rounded-md bg-signal px-3 py-2 text-sm font-medium text-white" href="/sponsor">
+            Sponsor
+          </a>
+        </div>
+      </section>
     </main>
   );
 }
