@@ -338,3 +338,66 @@ class EventIngestResponse(BaseContract):
     stream: str
     projected_entities: int = Field(default=0, ge=0)
     projected_claims: int = Field(default=0, ge=0)
+
+
+class ControlPlaneGraphNode(BaseContract):
+    id: str
+    label: str
+    kind: str
+    confidence: float
+
+
+class ControlPlaneGraphLink(BaseContract):
+    source: str
+    target: str
+    predicate: str
+
+
+class ControlPlaneSemanticEvent(BaseContract):
+    id: str
+    topic: str
+    label: str
+    time: str
+    severity: str
+
+
+class ControlPlaneWorkload(BaseContract):
+    id: str
+    class_name: str = Field(alias="className")
+    state: str
+    depth: str
+    score: float
+    primitives: list[str] = Field(default_factory=list)
+
+
+class ControlPlaneInsight(BaseContract):
+    id: str
+    severity: str
+    title: str
+    detail: str
+    action: str
+    confidence: float
+    signal_count: int = Field(alias="signalCount")
+
+
+class ControlPlaneUIState(BaseContract):
+    graph_nodes: list[ControlPlaneGraphNode] = Field(default_factory=list, alias="graphNodes")
+    graph_links: list[ControlPlaneGraphLink] = Field(default_factory=list, alias="graphLinks")
+    semantic_events: list[ControlPlaneSemanticEvent] = Field(
+        default_factory=list,
+        alias="semanticEvents",
+    )
+    workloads: list[ControlPlaneWorkload] = Field(default_factory=list)
+    insights: list[ControlPlaneInsight] = Field(default_factory=list)
+
+
+class EntityListResponse(BaseContract):
+    entities: list[Entity] = Field(default_factory=list)
+
+
+class ClaimListResponse(BaseContract):
+    claims: list[Claim] = Field(default_factory=list)
+
+
+class ApprovalListResponse(BaseContract):
+    approvals: list[Approval] = Field(default_factory=list)
