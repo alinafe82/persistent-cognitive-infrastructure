@@ -11,13 +11,17 @@ from app.core.config import settings
 from app.domain.models import (
     Approval,
     ApprovalDecisionRequest,
+    ApprovalListResponse,
     ApprovalState,
     Claim,
+    ClaimListResponse,
     ClaimState,
     Confidence,
     ConfidenceBand,
+    ControlPlaneUIState,
     DataClassification,
     Entity,
+    EntityListResponse,
     EventIngestResponse,
     HealthResponse,
     MemoryCompressionRequest,
@@ -711,25 +715,29 @@ async def ingest_event(event: SemanticEventEnvelope) -> EventIngestResponse:
     )
 
 
-@router.get("/v1/control-plane/ui-state", tags=["system"])
-async def control_plane_ui_state() -> dict[str, list[dict[str, object]]]:
-    return store.ui_state()
+@router.get("/v1/control-plane/ui-state", response_model=ControlPlaneUIState, tags=["system"])
+async def control_plane_ui_state() -> ControlPlaneUIState:
+    return ControlPlaneUIState.model_validate(store.ui_state())
 
 
-@router.get("/v1/tenants/{tenant_id}/graph/entities", tags=["graph"])
+@router.get(
+    "/v1/tenants/{tenant_id}/graph/entities",
+    response_model=EntityListResponse,
+    tags=["graph"],
+)
 async def list_entities(
     tenant_id: Annotated[UUID, Path()],
     kind: str | None = None,
     q: str | None = None,
     limit: int = 50,
-) -> dict[str, list[Entity]]:
+) -> EntityListResponse:
     entities = [entity for entity in store.entities.values() if entity.tenant_id == tenant_id]
     if kind:
         normalized_kind = kind.strip().lower().replace(" ", "_").replace("-", "_")
         entities = [entity for entity in entities if entity.kind == normalized_kind]
     if q:
         entities = [entity for entity in entities if q.lower() in entity.canonical_name.lower()]
-    return {"entities": entities[: max(1, min(limit, 200))]}
+    return EntityListResponse(entities=entities[: max(1, min(limit, 200))])
 
 
 @router.get(
@@ -744,13 +752,17 @@ async def get_entity(tenant_id: UUID, entity_id: UUID) -> Entity:
     return entity
 
 
-@router.get("/v1/tenants/{tenant_id}/graph/entities/{entity_id}/claims", tags=["graph"])
+@router.get(
+    "/v1/tenants/{tenant_id}/graph/entities/{entity_id}/claims",
+    response_model=ClaimListResponse,
+    tags=["graph"],
+)
 async def list_entity_claims(
     tenant_id: UUID,
     entity_id: UUID,
     predicate: str | None = None,
     include_contradicted: bool = True,
-) -> dict[str, list[Claim]]:
+) -> ClaimListResponse:
     claims = [
         claim
         for claim in store.claims.values()
@@ -760,7 +772,7 @@ async def list_entity_claims(
         claims = [claim for claim in claims if claim.predicate == predicate]
     if not include_contradicted:
         claims = [claim for claim in claims if claim.contradiction_set_id is None]
-    return {"claims": claims}
+    return ClaimListResponse(claims=claims)
 
 
 @router.post("/v1/workloads/dry-run", response_model=SchedulerDecision, tags=["workloads"])
@@ -789,11 +801,15 @@ async def get_workload(workload_id: UUID) -> WorkloadResponse:
     return response
 
 
-@router.get("/v1/workloads/{workload_id}/approvals", tags=["governance"])
-async def list_workload_approvals(workload_id: UUID) -> dict[str, list[Approval]]:
+@router.get(
+    "/v1/workloads/{workload_id}/approvals",
+    response_model=ApprovalListResponse,
+    tags=["governance"],
+)
+async def list_workload_approvals(workload_id: UUID) -> ApprovalListResponse:
     if workload_id not in store.workloads:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="workload not found")
-    return {"approvals": store.approvals_for_workload(workload_id)}
+    return ApprovalListResponse(approvals=store.approvals_for_workload(workload_id))
 
 
 @router.post(

@@ -70,18 +70,19 @@ def test_event_ingest_projects_graph_state_and_ui_snapshot() -> None:
         assert response.projected_entities == 1
         assert response.projected_claims == 1
 
-        entities = (await list_entities(tenant_id, kind="Repository"))["entities"]
-        assert entities[0].entity_id == entity_id
-        assert entities[0].canonical_name == "api-service"
+        entities = await list_entities(tenant_id, kind="Repository")
+        assert entities.entities[0].entity_id == entity_id
+        assert entities.entities[0].canonical_name == "api-service"
 
-        claims = (await list_entity_claims(tenant_id, entity_id))["claims"]
-        assert claims[0].predicate == "default_branch"
-        assert claims[0].object_value == "main"
+        claims = await list_entity_claims(tenant_id, entity_id)
+        assert claims.claims[0].predicate == "default_branch"
+        assert claims.claims[0].object_value == "main"
 
         ui_state = await control_plane_ui_state()
-        assert ui_state["graphNodes"]
-        assert ui_state["semanticEvents"][0]["label"] == "repository default branch confirmed"
-        assert ui_state["insights"][0]["id"] in {"runtime-clear", "graph-coverage"}
+        dumped = ui_state.model_dump(by_alias=True)
+        assert dumped["graphNodes"]
+        assert dumped["semanticEvents"][0]["label"] == "repository default branch confirmed"
+        assert dumped["insights"][0]["id"] in {"runtime-clear", "graph-coverage"}
 
     asyncio.run(exercise())
 
@@ -124,8 +125,9 @@ def test_workload_admission_materializes_approval_and_replay_bundle() -> None:
         assert replay.artifacts["event_ids"] == [str(event_response.event_id)]
 
         ui_state = await control_plane_ui_state()
-        assert ui_state["insights"][0]["id"] == "approval-queue"
-        assert ui_state["insights"][0]["severity"] == "critical"
+        dumped = ui_state.model_dump(by_alias=True)
+        assert dumped["insights"][0]["id"] == "approval-queue"
+        assert dumped["insights"][0]["severity"] == "critical"
 
     asyncio.run(exercise())
 
