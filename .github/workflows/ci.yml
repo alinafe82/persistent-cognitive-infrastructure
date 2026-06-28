@@ -64,10 +64,13 @@ jobs:
           cache-dependency-path: frontend/control-plane/package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install --no-audit --no-fund
 
       - name: Lint
         run: npm run lint
+
+      - name: Test with coverage
+        run: npm run test:coverage
 
       - name: Build
         run: npm run build
