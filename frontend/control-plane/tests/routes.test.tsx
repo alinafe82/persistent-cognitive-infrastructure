@@ -3,6 +3,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 process.env.NEXT_PUBLIC_SITE_URL = "https://pci-control-plane.example";
 process.env.NEXT_PUBLIC_CONTACT_EMAIL = "ops@pci-control-plane.example";
+process.env.NEXT_PUBLIC_GTM_ID = " GTM-ABC123 ";
 process.env.PCI_CONTROL_PLANE_URL = "http://127.0.0.1:8080";
 
 let site: typeof import("../src/lib/site");
@@ -42,6 +43,8 @@ describe("site helpers", () => {
   it("builds canonical URLs and metadata from the configured site URL", () => {
     expect(site.SITE_URL).toBe("https://pci-control-plane.example");
     expect(site.CONTACT_EMAIL).toBe("ops@pci-control-plane.example");
+    expect(site.GOOGLE_TAG_MANAGER_ENABLED).toBe(true);
+    expect(site.GOOGLE_TAG_MANAGER_ID).toBe("GTM-ABC123");
     expect(site.siteUrl("/contact")).toBe("https://pci-control-plane.example/contact");
 
     const metadata = seo.pageMetadata({
@@ -154,6 +157,8 @@ describe("public routes", () => {
     expect(markup).toContain('lang="en"');
     expect(markup).toContain("visit-tracker.js");
     expect(markup).toContain('data-site="pci-control-plane"');
+    expect(markup).toContain("www.googletagmanager.com/gtm.js");
+    expect(markup).toContain("www.googletagmanager.com/ns.html?id=GTM-ABC123");
     expect(markup).toContain("SoftwareApplication");
     expect(markup).toContain("PCI Control Plane");
     expect(markup).toContain("<div>child</div>");
@@ -268,7 +273,7 @@ describe("public routes", () => {
       "Privacy",
       () => privacyPage,
       "Privacy notice",
-      "The public website may count page visits through the Useful Web tracker.",
+      "The public website may count page visits through the Useful Web tracker and optional Google Tag Manager.",
     ],
     ["Disclosure", () => disclosurePage, "Revenue disclosure", "Sponsored placements"],
     [
