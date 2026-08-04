@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Buffer
 from datetime import UTC, datetime
-from typing import Annotated
+from typing import Annotated, SupportsFloat, SupportsIndex, TypedDict
 from uuid import NAMESPACE_URL, UUID, uuid5
 
 from fastapi import APIRouter, HTTPException, Path, status
@@ -39,6 +40,16 @@ from app.domain.models import (
 from app.runtime.scheduler import WorkloadScheduler
 
 router = APIRouter()
+
+
+class DecisionInsight(TypedDict):
+    id: str
+    severity: str
+    title: str
+    detail: str
+    action: str
+    confidence: float
+    signalCount: int
 
 
 class InMemoryControlPlaneStore:
@@ -159,7 +170,7 @@ class InMemoryControlPlaneStore:
             artifacts=artifacts,
         )
 
-    def ui_state(self) -> dict[str, list[dict[str, object]]]:
+    def ui_state(self) -> dict[str, object]:
         entities = sorted(self.entities.values(), key=lambda item: item.canonical_name.lower())
         claims = sorted(self.claims.values(), key=lambda item: item.observed_at, reverse=True)
         events = sorted(self.events.values(), key=lambda item: item.occurred_at, reverse=True)
@@ -218,8 +229,8 @@ class InMemoryControlPlaneStore:
         claims: list[Claim],
         events: list[SemanticEventEnvelope],
         workloads: list[Workload],
-    ) -> list[dict[str, object]]:
-        insights: list[dict[str, object]] = []
+    ) -> list[DecisionInsight]:
+        insights: list[DecisionInsight] = []
 
         pending_approvals = [
             approval
@@ -618,6 +629,8 @@ class InMemoryControlPlaneStore:
 
     @staticmethod
     def _float(value: object, default: float) -> float:
+        if not isinstance(value, (str, Buffer, SupportsFloat, SupportsIndex)):
+            return max(0.0, min(1.0, default))
         try:
             return max(0.0, min(1.0, float(value)))
         except (TypeError, ValueError):
