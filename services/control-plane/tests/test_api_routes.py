@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from datetime import UTC, datetime
+from decimal import Decimal
 from uuid import UUID, uuid4
 
 from app.api.routes import (
@@ -143,3 +144,12 @@ def test_metrics_include_projection_and_approval_counts() -> None:
         assert "pci_control_plane_approvals_total" in payload
 
     asyncio.run(exercise())
+
+
+def test_confidence_accepts_float_convertible_payload_values() -> None:
+    confidence = store._confidence_from_payload(
+        {"confidence_score": Decimal("0.8")},
+        default_score=0.5,
+    )
+
+    assert confidence.score == 0.8
