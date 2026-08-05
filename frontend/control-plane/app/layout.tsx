@@ -1,6 +1,8 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import {
+  GOOGLE_ANALYTICS_ENABLED,
+  GOOGLE_ANALYTICS_ID,
   GOOGLE_TAG_MANAGER_ENABLED,
   GOOGLE_TAG_MANAGER_ID,
   SITE_NAME,
@@ -54,6 +56,26 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        {GOOGLE_ANALYTICS_ENABLED ? (
+          <>
+            <script
+              async
+              src={`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(
+                GOOGLE_ANALYTICS_ID
+              )}`}
+            />
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `
+                  window.dataLayer = window.dataLayer || [];
+                  function gtag(){dataLayer.push(arguments);}
+                  gtag("js", new Date());
+                  gtag("config", ${JSON.stringify(GOOGLE_ANALYTICS_ID)});
+                `,
+              }}
+            />
+          </>
+        ) : null}
         {GOOGLE_TAG_MANAGER_ENABLED ? (
           <script
             dangerouslySetInnerHTML={{

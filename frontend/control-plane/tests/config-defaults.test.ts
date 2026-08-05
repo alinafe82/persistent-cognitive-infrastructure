@@ -6,6 +6,7 @@ describe("default configuration fallbacks", () => {
     delete process.env.NEXT_PUBLIC_SITE_URL;
     delete process.env.NEXT_PUBLIC_CONTACT_EMAIL;
     delete process.env.NEXT_PUBLIC_MONETIZATION_MODE;
+    delete process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
     delete process.env.NEXT_PUBLIC_GTM_ID;
     delete process.env.PCI_CONTROL_PLANE_URL;
   });
@@ -24,6 +25,8 @@ describe("default configuration fallbacks", () => {
     expect(site.SITE_URL).toBe("https://pci-control-plane.local");
     expect(site.CONTACT_EMAIL).toBe("security@pci-control-plane.example");
     expect(site.MONETIZATION_MODE).toBe("leadgen");
+    expect(site.GOOGLE_ANALYTICS_ENABLED).toBe(false);
+    expect(site.GOOGLE_ANALYTICS_ID).toBe("");
     expect(site.GOOGLE_TAG_MANAGER_ENABLED).toBe(false);
     expect(site.GOOGLE_TAG_MANAGER_ID).toBe("");
     expect(site.siteUrl("/terms")).toBe("https://pci-control-plane.local/terms");
@@ -33,5 +36,17 @@ describe("default configuration fallbacks", () => {
     expect(fetchMock).toHaveBeenCalledWith("http://127.0.0.1:8080/v1/control-plane/ui-state", {
       cache: "no-store",
     });
+  });
+
+  it("rejects invalid Google analytics identifiers", async () => {
+    process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID = "not-a-ga4-id";
+    process.env.NEXT_PUBLIC_GTM_ID = "not-a-gtm-id";
+
+    const site = await import("../src/lib/site");
+
+    expect(site.GOOGLE_ANALYTICS_ENABLED).toBe(false);
+    expect(site.GOOGLE_ANALYTICS_ID).toBe("");
+    expect(site.GOOGLE_TAG_MANAGER_ENABLED).toBe(false);
+    expect(site.GOOGLE_TAG_MANAGER_ID).toBe("");
   });
 });

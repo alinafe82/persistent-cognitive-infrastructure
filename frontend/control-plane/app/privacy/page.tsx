@@ -15,7 +15,7 @@ export default function PrivacyPage() {
         <p className="font-mono text-xs uppercase text-graphite">Privacy</p>
         <h1 className="mt-2 text-3xl font-semibold text-ink">Privacy notice</h1>
         <p className="mt-3 text-sm leading-6 text-graphite">
-          The public website may count page visits through the Useful Web tracker and optional Google Tag Manager. It
+          The public website may count page visits through the Useful Web tracker and optional Google Analytics or Google Tag Manager. It
           should not collect repository source, secrets, tenant data, workload payloads, or control-plane records.
         </p>
         <h2 className="mt-6 text-lg font-semibold text-ink">Analytics</h2>
