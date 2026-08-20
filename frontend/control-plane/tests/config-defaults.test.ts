@@ -6,6 +6,7 @@ describe("default configuration fallbacks", () => {
     delete process.env.NEXT_PUBLIC_SITE_URL;
     delete process.env.NEXT_PUBLIC_CONTACT_EMAIL;
     delete process.env.NEXT_PUBLIC_MONETIZATION_MODE;
+    delete process.env.NEXT_PUBLIC_GTM_ID;
     delete process.env.PCI_CONTROL_PLANE_URL;
   });
 
@@ -23,6 +24,8 @@ describe("default configuration fallbacks", () => {
     expect(site.SITE_URL).toBe("https://pci-control-plane.local");
     expect(site.CONTACT_EMAIL).toBe("security@pci-control-plane.example");
     expect(site.MONETIZATION_MODE).toBe("leadgen");
+    expect(site.GOOGLE_TAG_MANAGER_ENABLED).toBe(false);
+    expect(site.GOOGLE_TAG_MANAGER_ID).toBe("");
     expect(site.siteUrl("/terms")).toBe("https://pci-control-plane.local/terms");
 
     await controlPlane.loadControlPlaneState();
