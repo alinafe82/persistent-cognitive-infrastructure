@@ -13,6 +13,11 @@ permissions:
   actions: read
   issues: write
 
+concurrency:
+  group: >-
+    ci-failure-alert-${{ github.event.workflow_run.workflow_id }}-${{ github.event.workflow_run.head_repository.full_name }}-${{ github.event.workflow_run.head_branch }}
+  cancel-in-progress: false
+
 jobs:
   synchronize-alert:
     if: >-
