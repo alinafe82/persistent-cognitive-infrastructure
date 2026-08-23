@@ -89,12 +89,10 @@ jobs:
               -F per_page=100
           )"
           issue_record="$(
-            jq -c --arg title "${title}" \
-              --arg marker_prefix "${marker_prefix}" \
+            jq -c --arg marker_prefix "${marker_prefix}" \
               --arg legacy_marker "${legacy_marker}" \
               '[.[][] |
                 select(
-                  .title == $title ||
                   ((.body // "") | contains($marker_prefix)) ||
                   ((.body // "") | contains($legacy_marker))
                 )
