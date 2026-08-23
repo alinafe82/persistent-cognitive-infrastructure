@@ -1,0 +1,62 @@
+name: CI Failure Alert
+
+on:
+  workflow_run:
+    workflows:
+      - "CI"
+      - "Security"
+      - "Secret Scan"
+    types: [completed]
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: ci-alert-${{ github.event.workflow_run.name }}
+  cancel-in-progress: false
+
+jobs:
+  synchronize-alert:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPOSITORY: ${{ github.repository }}
+      REPOSITORY_OWNER: ${{ github.repository_owner }}
+      WORKFLOW_NAME: ${{ github.event.workflow_run.name }}
+      CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+      RUN_URL: ${{ github.event.workflow_run.html_url }}
+      HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+      HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+    steps:
+      - name: Open, update, or resolve the failure alert
+        shell: bash
+        run: |
+          set -euo pipefail
+          title="CI failure: ${WORKFLOW_NAME}"
+          issue_number="$(
+            gh issue list --repo "${REPOSITORY}" --state open --limit 100 \
+              --json number,title |
+              jq -r --arg title "${title}" '.[] | select(.title == $title) | .number' |
+              head -n 1
+          )"
+          details="Workflow: ${WORKFLOW_NAME}
+          Conclusion: ${CONCLUSION}
+          Branch: ${HEAD_BRANCH}
+          Commit: ${HEAD_SHA}
+          Run: ${RUN_URL}"
+
+          if [[ "${CONCLUSION}" == "failure" || "${CONCLUSION}" == "timed_out" ]]; then
+            if [[ -n "${issue_number}" ]]; then
+              gh issue comment "${issue_number}" --repo "${REPOSITORY}" --body "${details}"
+            else
+              gh issue create --repo "${REPOSITORY}" --title "${title}" \
+                --body "${details}" --assignee "${REPOSITORY_OWNER}"
+            fi
+          elif [[ "${CONCLUSION}" == "success" && -n "${issue_number}" ]]; then
+            gh issue comment "${issue_number}" --repo "${REPOSITORY}" \
+              --body "Recovered: ${RUN_URL}"
+            gh issue close "${issue_number}" --repo "${REPOSITORY}" \
+              --reason completed
+          fi
