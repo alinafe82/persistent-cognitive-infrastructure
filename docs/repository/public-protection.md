@@ -68,9 +68,13 @@ Configure `main` with:
 Required checks:
 
 - `Verify scaffold`
+- `Service runtime tests`
+- `Frontend lint and build`
+- `Render Helm chart`
 - `CodeQL (python)`
 - `CodeQL (javascript-typescript)`
 - `Dependency review`
+- `gitleaks`
 
 ## Security Features
 

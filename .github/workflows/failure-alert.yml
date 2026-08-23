@@ -10,11 +10,8 @@ on:
 
 permissions:
   contents: read
+  actions: read
   issues: write
-
-concurrency:
-  group: ci-alert-${{ github.event.workflow_run.name }}
-  cancel-in-progress: false
 
 jobs:
   synchronize-alert:
@@ -30,40 +27,76 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       REPOSITORY: ${{ github.repository }}
       REPOSITORY_OWNER: ${{ github.repository_owner }}
+      REPOSITORY_OWNER_TYPE: ${{ github.event.repository.owner.type }}
       WORKFLOW_NAME: ${{ github.event.workflow_run.name }}
-      CONCLUSION: ${{ github.event.workflow_run.conclusion }}
-      RUN_URL: ${{ github.event.workflow_run.html_url }}
+      WORKFLOW_ID: ${{ github.event.workflow_run.workflow_id }}
+      RUN_ID: ${{ github.event.workflow_run.id }}
       HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
-      HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+      ALERT_LABEL: ci-failure-alert
     steps:
       - name: Open, update, or resolve the failure alert
         shell: bash
         run: |
           set -euo pipefail
+
+          # Reconcile against the authoritative latest completed run. This makes
+          # delayed events and reruns of older commits harmless.
+          latest_run="$(
+            gh api --method GET \
+              "repos/${REPOSITORY}/actions/workflows/${WORKFLOW_ID}/runs" \
+              -f branch="${HEAD_BRANCH}" \
+              -f status=completed \
+              -F exclude_pull_requests=true \
+              -F per_page=1
+          )"
+          latest_id="$(jq -r '.workflow_runs[0].id // empty' <<<"${latest_run}")"
+          if [[ "${latest_id}" != "${RUN_ID}" ]]; then
+            echo "Ignoring stale workflow_run event ${RUN_ID}; latest is ${latest_id:-none}."
+            exit 0
+          fi
+
+          conclusion="$(jq -r '.workflow_runs[0].conclusion' <<<"${latest_run}")"
+          run_url="$(jq -r '.workflow_runs[0].html_url' <<<"${latest_run}")"
+          head_sha="$(jq -r '.workflow_runs[0].head_sha' <<<"${latest_run}")"
           title="CI failure: ${WORKFLOW_NAME}"
+          gh label create "${ALERT_LABEL}" --repo "${REPOSITORY}" \
+            --color B60205 \
+            --description "Owned by the CI failure alert workflow" \
+            --force >/dev/null
           issue_number="$(
-            gh issue list --repo "${REPOSITORY}" --state open --limit 100 \
+            gh issue list --repo "${REPOSITORY}" --state open \
+              --label "${ALERT_LABEL}" --search "\"${title}\" in:title" --limit 10 \
               --json number,title |
               jq -r --arg title "${title}" '.[] | select(.title == $title) | .number' |
               head -n 1
           )"
           details="Workflow: ${WORKFLOW_NAME}
-          Conclusion: ${CONCLUSION}
+          Conclusion: ${conclusion}
           Branch: ${HEAD_BRANCH}
-          Commit: ${HEAD_SHA}
-          Run: ${RUN_URL}"
+          Commit: ${head_sha}
+          Run: ${run_url}
 
-          if [[ "${CONCLUSION}" == "failure" || "${CONCLUSION}" == "timed_out" ||
-                "${CONCLUSION}" == "startup_failure" || "${CONCLUSION}" == "action_required" ]]; then
+          <!-- ci-failure-alert:${WORKFLOW_ID} -->"
+
+          if [[ "${conclusion}" == "failure" || "${conclusion}" == "timed_out" ||
+                "${conclusion}" == "startup_failure" || "${conclusion}" == "action_required" ]]; then
             if [[ -n "${issue_number}" ]]; then
               gh issue comment "${issue_number}" --repo "${REPOSITORY}" --body "${details}"
             else
-              gh issue create --repo "${REPOSITORY}" --title "${title}" \
-                --body "${details}" --assignee "${REPOSITORY_OWNER}"
+              create_args=(
+                --repo "${REPOSITORY}"
+                --title "${title}"
+                --body "${details}"
+                --label "${ALERT_LABEL}"
+              )
+              if [[ "${REPOSITORY_OWNER_TYPE}" == "User" ]]; then
+                create_args+=(--assignee "${REPOSITORY_OWNER}")
+              fi
+              gh issue create "${create_args[@]}"
             fi
-          elif [[ "${CONCLUSION}" == "success" && -n "${issue_number}" ]]; then
+          elif [[ "${conclusion}" == "success" && -n "${issue_number}" ]]; then
             gh issue comment "${issue_number}" --repo "${REPOSITORY}" \
-              --body "Recovered: ${RUN_URL}"
+              --body "Recovered: ${run_url}"
             gh issue close "${issue_number}" --repo "${REPOSITORY}" \
               --reason completed
           fi

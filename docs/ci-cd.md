@@ -2,7 +2,9 @@
 
 ## Required checks
 
-Scaffold, control-plane tests, frontend lint/test/build/audit, Helm rendering, CodeQL, dependency review, and secret scanning.
+The protected `main` branch requires `Verify scaffold`, `Service runtime tests`,
+`Frontend lint and build`, `Render Helm chart`, `CodeQL (python)`,
+`CodeQL (javascript-typescript)`, `Dependency review`, and `gitleaks`.
 
 All workflows use explicit token permissions, bounded runtimes, concurrency controls, and
 immutable commit pins for external actions where actions are used.
