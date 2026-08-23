@@ -35,7 +35,6 @@ jobs:
       REPOSITORY_OWNER_TYPE: ${{ github.event.repository.owner.type }}
       WORKFLOW_NAME: ${{ github.event.workflow_run.name }}
       WORKFLOW_ID: ${{ github.event.workflow_run.workflow_id }}
-      RUN_ID: ${{ github.event.workflow_run.id }}
       HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
       ALERT_LABEL: ci-failure-alert
     steps:
@@ -44,8 +43,8 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Reconcile against the authoritative latest completed run. This makes
-          # delayed events and reruns of older commits harmless.
+          # Every serialized invocation reconciles the authoritative latest
+          # completed run. This makes delayed or replaced events harmless.
           latest_run="$(
             gh api --method GET \
               "repos/${REPOSITORY}/actions/workflows/${WORKFLOW_ID}/runs" \
@@ -54,12 +53,6 @@ jobs:
               -F exclude_pull_requests=true \
               -F per_page=1
           )"
-          latest_id="$(jq -r '.workflow_runs[0].id // empty' <<<"${latest_run}")"
-          if [[ "${latest_id}" != "${RUN_ID}" ]]; then
-            echo "Ignoring stale workflow_run event ${RUN_ID}; latest is ${latest_id:-none}."
-            exit 0
-          fi
-
           conclusion="$(jq -r '.workflow_runs[0].conclusion' <<<"${latest_run}")"
           run_url="$(jq -r '.workflow_runs[0].html_url' <<<"${latest_run}")"
           head_sha="$(jq -r '.workflow_runs[0].head_sha' <<<"${latest_run}")"
