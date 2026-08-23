@@ -13,6 +13,11 @@ permissions:
   actions: read
   issues: write
 
+concurrency:
+  group: >-
+    ci-failure-alert-${{ github.event.repository.id }}-${{ github.event.workflow_run.workflow_id }}-${{ (github.event.workflow_run.head_branch == github.event.repository.default_branch && github.event.workflow_run.head_repository.full_name == github.repository && github.event.workflow_run.event != 'pull_request') && 'eligible' || 'ignored' }}
+  cancel-in-progress: false
+
 jobs:
   synchronize-alert:
     if: >-
@@ -28,10 +33,7 @@ jobs:
       REPOSITORY: ${{ github.repository }}
       REPOSITORY_OWNER: ${{ github.repository_owner }}
       REPOSITORY_OWNER_TYPE: ${{ github.event.repository.owner.type }}
-      WORKFLOW_NAME: ${{ github.event.workflow_run.name }}
       WORKFLOW_ID: ${{ github.event.workflow_run.workflow_id }}
-      RUN_ID: ${{ github.event.workflow_run.id }}
-      HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
       ALERT_LABEL: ci-failure-alert
     steps:
       - name: Open, update, or resolve the failure alert
@@ -39,49 +41,89 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Reconcile against the authoritative latest completed run. This makes
-          # delayed events and reruns of older commits harmless.
-          latest_run="$(
-            gh api --method GET \
+          # Every serialized invocation reconciles the authoritative latest
+          # completed run. This makes delayed or replaced events harmless.
+          head_branch="$(gh api "repos/${REPOSITORY}" --jq '.default_branch')"
+          completed_runs="$(
+            gh api --paginate --slurp --method GET \
               "repos/${REPOSITORY}/actions/workflows/${WORKFLOW_ID}/runs" \
-              -f branch="${HEAD_BRANCH}" \
+              -f branch="${head_branch}" \
               -f status=completed \
-              -F exclude_pull_requests=true \
-              -F per_page=1
+              -F per_page=100
           )"
-          latest_id="$(jq -r '.workflow_runs[0].id // empty' <<<"${latest_run}")"
-          if [[ "${latest_id}" != "${RUN_ID}" ]]; then
-            echo "Ignoring stale workflow_run event ${RUN_ID}; latest is ${latest_id:-none}."
-            exit 0
+          latest_run="$(
+            jq -c \
+              '[.[] | .workflow_runs[] | select(.event != "pull_request")][0] // empty' \
+              <<<"${completed_runs}"
+          )"
+          latest_id="$(jq -r '.id // empty' <<<"${latest_run:-{}}")"
+          if [[ -z "${latest_id}" ]]; then
+            echo "No completed default-branch run found for workflow ${WORKFLOW_ID}." >&2
+            exit 1
           fi
-
-          conclusion="$(jq -r '.workflow_runs[0].conclusion' <<<"${latest_run}")"
-          run_url="$(jq -r '.workflow_runs[0].html_url' <<<"${latest_run}")"
-          head_sha="$(jq -r '.workflow_runs[0].head_sha' <<<"${latest_run}")"
-          title="CI failure: ${WORKFLOW_NAME}"
+          latest_attempt="$(jq -r '.run_attempt // empty' <<<"${latest_run:-{}}")"
+          if [[ ! "${latest_attempt}" =~ ^[1-9][0-9]*$ ]]; then
+            echo "Latest completed run did not include a valid attempt number." >&2
+            exit 1
+          fi
+          workflow_name="$(jq -r '.name // empty' <<<"${latest_run:-{}}")"
+          if [[ -z "${workflow_name}" ]]; then
+            echo "Latest completed run did not include a workflow name." >&2
+            exit 1
+          fi
+          conclusion="$(jq -r '.conclusion' <<<"${latest_run}")"
+          run_url="$(jq -r '.html_url' <<<"${latest_run}")"
+          head_sha="$(jq -r '.head_sha' <<<"${latest_run}")"
+          title="CI failure: ${workflow_name}"
           gh label create "${ALERT_LABEL}" --repo "${REPOSITORY}" \
             --color B60205 \
             --description "Owned by the CI failure alert workflow" \
             --force >/dev/null
-          issue_number="$(
-            gh issue list --repo "${REPOSITORY}" --state open \
-              --label "${ALERT_LABEL}" --search "\"${title}\" in:title" --limit 10 \
-              --json number,title |
-              jq -r --arg title "${title}" '.[] | select(.title == $title) | .number' |
-              head -n 1
+          marker_prefix="<!-- ci-failure-alert:${WORKFLOW_ID}:"
+          legacy_marker="<!-- ci-failure-alert:${WORKFLOW_ID} -->"
+          open_alerts="$(
+            gh api --paginate --slurp --method GET \
+              "repos/${REPOSITORY}/issues" \
+              -f state=open \
+              -f labels="${ALERT_LABEL}" \
+              -F per_page=100
           )"
-          details="Workflow: ${WORKFLOW_NAME}
+          issue_record="$(
+            jq -c --arg marker_prefix "${marker_prefix}" \
+              --arg legacy_marker "${legacy_marker}" \
+              '[.[][] |
+                select(
+                  ((.body // "") | contains($marker_prefix)) ||
+                  ((.body // "") | contains($legacy_marker))
+                )
+              ][0] // empty' <<<"${open_alerts}"
+          )"
+          issue_number="$(jq -r '.number // empty' <<<"${issue_record:-{}}")"
+          run_marker="<!-- ci-failure-alert:${WORKFLOW_ID}:${latest_id}:${latest_attempt} -->"
+          details="Workflow: ${workflow_name}
           Conclusion: ${conclusion}
-          Branch: ${HEAD_BRANCH}
+          Branch: ${head_branch}
           Commit: ${head_sha}
+          Attempt: ${latest_attempt}
           Run: ${run_url}
 
-          <!-- ci-failure-alert:${WORKFLOW_ID} -->"
+          ${run_marker}"
 
           if [[ "${conclusion}" == "failure" || "${conclusion}" == "timed_out" ||
                 "${conclusion}" == "startup_failure" || "${conclusion}" == "action_required" ]]; then
             if [[ -n "${issue_number}" ]]; then
-              gh issue comment "${issue_number}" --repo "${REPOSITORY}" --body "${details}"
+              recorded_details="$(
+                {
+                  gh issue view "${issue_number}" --repo "${REPOSITORY}" \
+                    --json body --jq '.body'
+                  gh api --paginate --method GET \
+                    "repos/${REPOSITORY}/issues/${issue_number}/comments" \
+                    -F per_page=100 --jq '.[].body'
+                }
+              )"
+              if ! grep -Fq -- "${run_marker}" <<<"${recorded_details}"; then
+                gh issue comment "${issue_number}" --repo "${REPOSITORY}" --body "${details}"
+              fi
             else
               create_args=(
                 --repo "${REPOSITORY}"
