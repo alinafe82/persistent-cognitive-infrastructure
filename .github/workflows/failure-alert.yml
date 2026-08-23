@@ -33,7 +33,6 @@ jobs:
       REPOSITORY: ${{ github.repository }}
       REPOSITORY_OWNER: ${{ github.repository_owner }}
       REPOSITORY_OWNER_TYPE: ${{ github.event.repository.owner.type }}
-      WORKFLOW_NAME: ${{ github.event.workflow_run.name }}
       WORKFLOW_ID: ${{ github.event.workflow_run.workflow_id }}
       ALERT_LABEL: ci-failure-alert
     steps:
@@ -58,23 +57,44 @@ jobs:
             echo "No completed default-branch run found for workflow ${WORKFLOW_ID}." >&2
             exit 1
           fi
+          workflow_name="$(jq -r '.workflow_runs[0].name // empty' <<<"${latest_run}")"
+          if [[ -z "${workflow_name}" ]]; then
+            echo "Latest completed run did not include a workflow name." >&2
+            exit 1
+          fi
           conclusion="$(jq -r '.workflow_runs[0].conclusion' <<<"${latest_run}")"
           run_url="$(jq -r '.workflow_runs[0].html_url' <<<"${latest_run}")"
           head_sha="$(jq -r '.workflow_runs[0].head_sha' <<<"${latest_run}")"
-          title="CI failure: ${WORKFLOW_NAME}"
+          title="CI failure: ${workflow_name}"
           gh label create "${ALERT_LABEL}" --repo "${REPOSITORY}" \
             --color B60205 \
             --description "Owned by the CI failure alert workflow" \
             --force >/dev/null
-          issue_number="$(
-            gh issue list --repo "${REPOSITORY}" --state open \
-              --label "${ALERT_LABEL}" --search "\"${title}\" in:title" --limit 10 \
-              --json number,title |
-              jq -r --arg title "${title}" '.[] | select(.title == $title) | .number' |
-              head -n 1
+          marker_prefix="<!-- ci-failure-alert:${WORKFLOW_ID}:"
+          legacy_marker="<!-- ci-failure-alert:${WORKFLOW_ID} -->"
+          open_alerts="$(
+            gh api --paginate --slurp --method GET \
+              "repos/${REPOSITORY}/issues" \
+              -f state=open \
+              -f labels="${ALERT_LABEL}" \
+              -F per_page=100
           )"
+          issue_record="$(
+            jq -c --arg title "${title}" \
+              --arg marker_prefix "${marker_prefix}" \
+              --arg legacy_marker "${legacy_marker}" \
+              '[.[][] |
+                select(
+                  .title == $title ||
+                  ((.body // "") | contains($marker_prefix)) ||
+                  ((.body // "") | contains($legacy_marker))
+                )
+              ][0] // empty' <<<"${open_alerts}"
+          )"
+          issue_number="$(jq -r '.number // empty' <<<"${issue_record:-{}}")"
+          issue_title="$(jq -r '.title // empty' <<<"${issue_record:-{}}")"
           run_marker="<!-- ci-failure-alert:${WORKFLOW_ID}:${latest_id} -->"
-          details="Workflow: ${WORKFLOW_NAME}
+          details="Workflow: ${workflow_name}
           Conclusion: ${conclusion}
           Branch: ${head_branch}
           Commit: ${head_sha}
@@ -85,11 +105,20 @@ jobs:
           if [[ "${conclusion}" == "failure" || "${conclusion}" == "timed_out" ||
                 "${conclusion}" == "startup_failure" || "${conclusion}" == "action_required" ]]; then
             if [[ -n "${issue_number}" ]]; then
-              current_body="$(
-                gh issue view "${issue_number}" --repo "${REPOSITORY}" --json body --jq '.body'
+              if [[ "${issue_title}" != "${title}" ]]; then
+                gh issue edit "${issue_number}" --repo "${REPOSITORY}" --title "${title}"
+              fi
+              recorded_details="$(
+                {
+                  gh issue view "${issue_number}" --repo "${REPOSITORY}" \
+                    --json body --jq '.body'
+                  gh api --paginate --method GET \
+                    "repos/${REPOSITORY}/issues/${issue_number}/comments" \
+                    -F per_page=100 --jq '.[].body'
+                }
               )"
-              if ! grep -Fq -- "${run_marker}" <<<"${current_body}"; then
-                gh issue edit "${issue_number}" --repo "${REPOSITORY}" --body "${details}"
+              if ! grep -Fq -- "${run_marker}" <<<"${recorded_details}"; then
+                gh issue comment "${issue_number}" --repo "${REPOSITORY}" --body "${details}"
               fi
             else
               create_args=(
