@@ -57,6 +57,11 @@ jobs:
             echo "No completed default-branch run found for workflow ${WORKFLOW_ID}." >&2
             exit 1
           fi
+          latest_attempt="$(jq -r '.workflow_runs[0].run_attempt // empty' <<<"${latest_run}")"
+          if [[ ! "${latest_attempt}" =~ ^[1-9][0-9]*$ ]]; then
+            echo "Latest completed run did not include a valid attempt number." >&2
+            exit 1
+          fi
           workflow_name="$(jq -r '.workflow_runs[0].name // empty' <<<"${latest_run}")"
           if [[ -z "${workflow_name}" ]]; then
             echo "Latest completed run did not include a workflow name." >&2
@@ -92,11 +97,12 @@ jobs:
               ][0] // empty' <<<"${open_alerts}"
           )"
           issue_number="$(jq -r '.number // empty' <<<"${issue_record:-{}}")"
-          run_marker="<!-- ci-failure-alert:${WORKFLOW_ID}:${latest_id} -->"
+          run_marker="<!-- ci-failure-alert:${WORKFLOW_ID}:${latest_id}:${latest_attempt} -->"
           details="Workflow: ${workflow_name}
           Conclusion: ${conclusion}
           Branch: ${head_branch}
           Commit: ${head_sha}
+          Attempt: ${latest_attempt}
           Run: ${run_url}
 
           ${run_marker}"
