@@ -92,7 +92,6 @@ jobs:
               ][0] // empty' <<<"${open_alerts}"
           )"
           issue_number="$(jq -r '.number // empty' <<<"${issue_record:-{}}")"
-          issue_title="$(jq -r '.title // empty' <<<"${issue_record:-{}}")"
           run_marker="<!-- ci-failure-alert:${WORKFLOW_ID}:${latest_id} -->"
           details="Workflow: ${workflow_name}
           Conclusion: ${conclusion}
@@ -105,9 +104,6 @@ jobs:
           if [[ "${conclusion}" == "failure" || "${conclusion}" == "timed_out" ||
                 "${conclusion}" == "startup_failure" || "${conclusion}" == "action_required" ]]; then
             if [[ -n "${issue_number}" ]]; then
-              if [[ "${issue_title}" != "${title}" ]]; then
-                gh issue edit "${issue_number}" --repo "${REPOSITORY}" --title "${title}"
-              fi
               recorded_details="$(
                 {
                   gh issue view "${issue_number}" --repo "${REPOSITORY}" \
