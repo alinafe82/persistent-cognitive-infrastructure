@@ -2,6 +2,7 @@ import { ConfidenceHeatmap } from "@/components/confidence-heatmap";
 import { ContextGraph } from "@/components/context-graph";
 import { EventTimeline } from "@/components/event-timeline";
 import { IntelligenceBrief } from "@/components/intelligence-brief";
+import { RefreshControl } from "@/components/refresh-control";
 import { WorkloadInspector } from "@/components/workload-inspector";
 import { loadControlPlaneState } from "@/lib/control-plane";
 import { DatabaseZap, Gauge, RadioTower, Shield } from "lucide-react";
@@ -21,6 +22,7 @@ export default async function Home() {
       )
     : 0;
   const attentionCount = insights.filter((insight) => insight.severity !== "normal").length;
+  const hasRuntimeData = graphNodes.length > 0 || semanticEvents.length > 0 || workloads.length > 0;
   const metrics = [
     { label: "events", value: String(semanticEvents.length), icon: RadioTower },
     { label: "entities", value: String(graphNodes.length), icon: DatabaseZap },
@@ -29,29 +31,47 @@ export default async function Home() {
   ];
 
   return (
-    <main className="min-h-[100dvh] px-5 py-5 lg:px-8">
+    <main id="main-content" className="min-h-[100dvh] px-5 py-5 lg:px-8">
       <header className="mb-5 flex flex-col gap-4 border-b border-line pb-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="font-mono text-xs uppercase text-graphite">Persistent Cognitive Infrastructure</p>
           <h1 className="mt-1 text-2xl font-semibold text-ink lg:text-3xl">Control Plane</h1>
         </div>
-        <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
-          {metrics.map((metric) => (
-            <div key={metric.label} className="panel min-w-[132px] px-3 py-2">
-              <div className="flex items-center justify-between gap-3">
-                <span className="metric-label">{metric.label}</span>
-                <metric.icon className="h-4 w-4 text-graphite" aria-hidden="true" />
+        <div className="flex flex-col items-end gap-2 lg:flex-row lg:items-start">
+          <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+            {metrics.map((metric) => (
+              <div key={metric.label} className="panel min-w-[132px] px-3 py-2">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="metric-label">{metric.label}</span>
+                  <metric.icon className="h-4 w-4 text-graphite" aria-hidden="true" />
+                </div>
+                <p className="mt-2 font-mono text-lg font-semibold text-ink">{metric.value}</p>
               </div>
-              <p className="mt-2 font-mono text-lg font-semibold text-ink">{metric.value}</p>
-            </div>
-          ))}
+            ))}
+          </div>
+          <RefreshControl />
         </div>
       </header>
 
       {error ? (
-        <div className="mb-5 rounded-md border border-danger/30 bg-white px-4 py-3 text-sm text-danger">
-          {error}
+        <div className="state-entry mb-5 rounded-md border border-danger/30 bg-white px-4 py-3 text-sm text-danger" role="alert">
+          <p className="font-medium">The dashboard could not reach the control plane.</p>
+          <p className="mt-1 text-graphite">
+            Start the API on port 8080, then choose Refresh state. Technical detail: {error}
+          </p>
         </div>
+      ) : null}
+
+      {!error && !hasRuntimeData ? (
+        <section className="state-entry panel mb-5 px-4 py-4" aria-labelledby="waiting-for-events">
+          <h2 id="waiting-for-events" className="text-sm font-semibold text-ink">Waiting for semantic events</h2>
+          <p className="mt-1 text-sm leading-6 text-graphite">
+            Load the included sample from the repository root, then choose Refresh state:
+          </p>
+          <code className="mt-2 block w-fit rounded bg-field px-2 py-1 font-mono text-xs text-ink">
+            scripts/load-demo.sh
+          </code>
+        </section>
       ) : null}
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.65fr)]">

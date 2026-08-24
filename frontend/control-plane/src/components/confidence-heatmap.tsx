@@ -30,7 +30,7 @@ export function ConfidenceHeatmap({ nodes }: Props) {
       </div>
       <div className="grid grid-cols-2 gap-2 p-4">
         {nodes.length ? nodes.map((node) => (
-          <div key={node.id} className="min-h-[72px] rounded-md border border-line bg-white p-3">
+          <div key={node.id} className="state-entry min-h-[72px] rounded-md border border-line bg-white p-3">
             <div className="flex items-center justify-between gap-3">
               <span className="truncate text-sm font-semibold text-ink">{node.label}</span>
               <span className="font-mono text-xs text-graphite">
@@ -39,7 +39,7 @@ export function ConfidenceHeatmap({ nodes }: Props) {
             </div>
             <div className="mt-3 h-2 rounded-full bg-field">
               <div
-                className={`h-2 rounded-full ${confidenceColor(clampConfidence(node.confidence))}`}
+                className={`confidence-bar h-2 rounded-full ${confidenceColor(clampConfidence(node.confidence))}`}
                 style={{ width: `${clampConfidence(node.confidence) * 100}%` }}
               />
             </div>

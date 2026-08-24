@@ -26,6 +26,7 @@ const fallbackNodeColor = "#3F4148";
 
 export function ContextGraph({ nodes, links }: Props) {
   const svgRef = useRef<SVGSVGElement | null>(null);
+  const nodeLabels = new Map(nodes.map((node) => [node.id, node.label]));
   const simulationNodes = useMemo<SimNode[]>(() => nodes.map((node) => ({ ...node })), [nodes]);
   const simulationLinks = useMemo<SimLink[]>(
     () => links.map((link) => ({ ...link }) as SimLink),
@@ -121,13 +122,31 @@ export function ContextGraph({ nodes, links }: Props) {
         <span className="font-mono text-xs text-graphite">{nodes.length} entities</span>
       </div>
       {nodes.length ? (
-        <svg
-          ref={svgRef}
-          viewBox="0 0 720 420"
-          className="h-[420px] w-full"
-          role="img"
-          aria-label="Projected context graph"
-        />
+        <>
+          <svg
+            ref={svgRef}
+            viewBox="0 0 720 420"
+            className="state-entry h-[420px] w-full"
+            role="img"
+            aria-label={`Projected context graph with ${nodes.length} entities and ${links.length} relationships`}
+          />
+          <div className="sr-only">
+            <h3>Graph contents</h3>
+            <ul>
+              {nodes.map((node) => (
+                <li key={node.id}>
+                  {node.label}, {node.kind}, {Math.round(node.confidence * 100)}% confidence
+                </li>
+              ))}
+              {links.map((link, index) => (
+                <li key={`${link.source}-${link.predicate}-${link.target}-${index}`}>
+                  {nodeLabels.get(String(link.source)) ?? String(link.source)} {link.predicate.replaceAll("_", " ")}{" "}
+                  {nodeLabels.get(String(link.target)) ?? String(link.target)}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </>
       ) : (
         <div className="flex h-[420px] items-center justify-center px-4 text-center text-sm text-graphite">
           No projected entities yet.

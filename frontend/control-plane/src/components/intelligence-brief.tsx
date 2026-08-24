@@ -54,7 +54,7 @@ export function IntelligenceBrief({ insights }: Props) {
 
       {primary ? (
         <div className="p-4">
-          <article className={`rounded-md border bg-white p-4 ${severityStyles[primary.severity].border}`}>
+          <article className={`state-entry rounded-md border bg-white p-4 ${severityStyles[primary.severity].border}`}>
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
