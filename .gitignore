@@ -29,3 +29,5 @@ source-snapshots/
 
 # Local architecture-agent context. Do not publish.
 .specs/
+.agent/
+.scratch/

@@ -43,6 +43,16 @@ npm install
 npm run dev
 ```
 
+The control plane starts empty. From the repository root, load a small in-memory sample once:
+
+```bash
+scripts/load-demo.sh
+```
+
+Open `http://localhost:3000`, then choose **Refresh state**. The sample adds repository,
+policy, and deployment entities plus one governance workload. State is in memory and resets
+when the control-plane process stops; running the loader again adds another workload.
+
 What is not exercised by any of the above: Temporal worker pools, NATS publishing, durable Postgres, real connectors, the model gateway. Those are listed in "Current implementation status" and intentionally not yet implemented.
 
 ## What PCI Is

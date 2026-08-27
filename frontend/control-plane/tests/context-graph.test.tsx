@@ -47,8 +47,12 @@ describe("context graph", () => {
     expect(container.querySelector("svg")).not.toBeNull();
     expect(container.querySelectorAll("circle")).toHaveLength(2);
     expect(container.querySelectorAll("line")).toHaveLength(1);
+    expect(container.querySelector("svg")?.getAttribute("aria-label")).toBe(
+      "Projected context graph with 2 entities and 1 relationships"
+    );
     expect(container.textContent).toContain("API Gateway");
     expect(container.textContent).toContain("Policy Guard");
+    expect(container.textContent).toContain("API Gateway enforces Policy Guard");
 
     root.unmount();
   });
