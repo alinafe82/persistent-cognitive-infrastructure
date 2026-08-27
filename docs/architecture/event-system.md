@@ -13,6 +13,13 @@ The semantic event bus carries normalized, tenant-scoped, schema-versioned event
 5. Events can be replayed into graph projections and scheduler decisions.
 6. Events can be compacted into memory without losing provenance.
 
+## Ingestion retry contract
+
+Producers may retry an event with the same `event_id` and identical envelope. The control plane
+accepts that retry without projecting graph state a second time. Reusing an `event_id` with
+different content is a conflict and the HTTP adapter returns `409`. The store expresses this as
+an event-domain conflict; transport mapping remains at the API boundary.
+
 ## Topic Taxonomy
 
 | Topic | Meaning |
