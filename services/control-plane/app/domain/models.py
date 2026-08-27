@@ -5,7 +5,7 @@ from enum import StrEnum
 from typing import Any
 from uuid import UUID, uuid4
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 class DataClassification(StrEnum):
@@ -195,6 +195,21 @@ class Claim(BaseContract):
     contradiction_set_id: UUID | None = None
     observed_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
+    @model_validator(mode="after")
+    def validate_valid_time_window(self) -> Claim:
+        for value in (self.valid_time_start, self.valid_time_end):
+            if value is not None and value.utcoffset() is None:
+                msg = "valid-time timestamps must be timezone-aware"
+                raise ValueError(msg)
+        if (
+            self.valid_time_start is not None
+            and self.valid_time_end is not None
+            and self.valid_time_end <= self.valid_time_start
+        ):
+            msg = "valid_time_end must be after valid_time_start"
+            raise ValueError(msg)
+        return self
+
 
 class WorkloadCreate(BaseContract):
     tenant_id: UUID
@@ -207,6 +222,14 @@ class WorkloadCreate(BaseContract):
     policy_tags: list[str] = Field(default_factory=list)
     deadline: datetime | None = None
     constraints: dict[str, Any] = Field(default_factory=dict)
+
+    @field_validator("deadline")
+    @classmethod
+    def require_timezone_aware_deadline(cls, value: datetime | None) -> datetime | None:
+        if value is not None and value.utcoffset() is None:
+            msg = "deadline must be timezone-aware"
+            raise ValueError(msg)
+        return value
 
 
 class SchedulerDecision(BaseContract):
@@ -238,6 +261,14 @@ class Workload(BaseContract):
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     deadline: datetime | None = None
+
+    @field_validator("deadline")
+    @classmethod
+    def require_timezone_aware_deadline(cls, value: datetime | None) -> datetime | None:
+        if value is not None and value.utcoffset() is None:
+            msg = "deadline must be timezone-aware"
+            raise ValueError(msg)
+        return value
 
     @classmethod
     def from_create(cls, request: WorkloadCreate) -> Workload:

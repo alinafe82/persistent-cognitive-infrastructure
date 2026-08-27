@@ -42,6 +42,10 @@ from app.runtime.scheduler import WorkloadScheduler
 router = APIRouter()
 
 
+class EventConflictError(ValueError):
+    pass
+
+
 class DecisionInsight(TypedDict):
     id: str
     severity: str
@@ -86,6 +90,11 @@ class InMemoryControlPlaneStore:
         )
 
     def put_event(self, event: SemanticEventEnvelope) -> tuple[int, int]:
+        existing = self.events.get(event.event_id)
+        if existing == event:
+            return 0, 0
+        if existing is not None:
+            raise EventConflictError("event_id already exists with different content")
         self.events[event.event_id] = event
         projected_entities = 0
         projected_claims = 0
@@ -718,7 +727,13 @@ async def metrics() -> str:
     tags=["events"],
 )
 async def ingest_event(event: SemanticEventEnvelope) -> EventIngestResponse:
-    projected_entities, projected_claims = store.put_event(event)
+    try:
+        projected_entities, projected_claims = store.put_event(event)
+    except EventConflictError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(exc),
+        ) from exc
     return EventIngestResponse(
         event_id=event.event_id,
         accepted=True,
