@@ -5,6 +5,9 @@ from datetime import UTC, datetime
 from decimal import Decimal
 from uuid import UUID, uuid4
 
+import pytest
+from fastapi import HTTPException
+
 from app.api.routes import (
     control_plane_ui_state,
     create_replay_bundle,
@@ -84,6 +87,29 @@ def test_event_ingest_projects_graph_state_and_ui_snapshot() -> None:
         assert dumped["graphNodes"]
         assert dumped["semanticEvents"][0]["label"] == "repository default branch confirmed"
         assert dumped["insights"][0]["id"] in {"runtime-clear", "graph-coverage"}
+
+    asyncio.run(exercise())
+
+
+def test_event_ingest_is_idempotent_and_rejects_conflicting_event_ids() -> None:
+    async def exercise() -> None:
+        store.clear()
+        event = _event_payload(uuid4(), uuid4())
+
+        first = await ingest_event(event)
+        repeated = await ingest_event(event)
+
+        assert first.projected_entities == 1
+        assert repeated.projected_entities == 0
+        assert repeated.projected_claims == 0
+        assert len(store.events) == 1
+        assert len(store.entities) == 1
+        assert len(store.claims) == 1
+
+        conflicting = event.model_copy(update={"payload_hash": "sha256:" + ("1" * 64)})
+        with pytest.raises(HTTPException) as exc_info:
+            await ingest_event(conflicting)
+        assert exc_info.value.status_code == 409
 
     asyncio.run(exercise())
 
