@@ -5,6 +5,7 @@ process.env.NEXT_PUBLIC_SITE_URL = "https://pci-control-plane.example";
 process.env.NEXT_PUBLIC_CONTACT_EMAIL = "ops@pci-control-plane.example";
 process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID = " G-ABC123 ";
 process.env.NEXT_PUBLIC_GTM_ID = " GTM-ABC123 ";
+process.env.NEXT_PUBLIC_VISIT_TRACKING_ENABLED = "true";
 process.env.PCI_CONTROL_PLANE_URL = "http://127.0.0.1:8080";
 
 let site: typeof import("../src/lib/site");
@@ -47,6 +48,7 @@ describe("site helpers", () => {
     expect(site.GOOGLE_ANALYTICS_ENABLED).toBe(true);
     expect(site.GOOGLE_ANALYTICS_ID).toBe("G-ABC123");
     expect(site.GOOGLE_TAG_MANAGER_ENABLED).toBe(true);
+    expect(site.VISIT_TRACKING_ENABLED).toBe(true);
     expect(site.GOOGLE_TAG_MANAGER_ID).toBe("GTM-ABC123");
     expect(site.siteUrl("/contact")).toBe("https://pci-control-plane.example/contact");
 
@@ -159,6 +161,8 @@ describe("public routes", () => {
 
     expect(markup).toContain('lang="en"');
     expect(markup).toContain("visit-tracker.js");
+    expect(markup).toContain("Skip to main content");
+    expect(markup).toContain("Site links");
     expect(markup).toContain('data-site="pci-control-plane"');
     expect(markup).toContain("www.googletagmanager.com/gtag/js?id=G-ABC123");
     expect(markup).toContain('gtag("config", "G-ABC123")');
@@ -227,6 +231,7 @@ describe("public routes", () => {
     expect(markup).toContain("Consulting surface");
     expect(markup).toContain("Sponsor");
     expect(markup).toContain("Contact");
+    expect(markup).toContain("Refresh state");
     expect(markup).toContain("API Gateway");
     expect(markup).toContain("Policy Guard");
     expect(markup).toContain("Schema drift");
@@ -255,6 +260,8 @@ describe("public routes", () => {
     expect(markup).toContain("No semantic events ingested yet.");
     expect(markup).toContain("No workloads admitted yet.");
     expect(markup).toContain("No runtime signals are available.");
+    expect(markup).toContain("Waiting for semantic events");
+    expect(markup).toContain("scripts/load-demo.sh");
   });
 
   it("renders an error banner when the backend responds with a failure", async () => {
