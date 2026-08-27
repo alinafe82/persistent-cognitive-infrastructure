@@ -61,3 +61,60 @@ select {
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
+
+.refresh-button,
+.confidence-bar {
+  transition: background-color 160ms ease, border-color 160ms ease, width 240ms ease;
+}
+
+.refresh-button:hover:not(:disabled) {
+  border-color: #0f766e;
+}
+
+.refresh-button:focus-visible,
+a:focus-visible {
+  outline: 3px solid rgba(15, 118, 110, 0.34);
+  outline-offset: 3px;
+}
+
+.state-entry {
+  animation: state-entry 220ms ease-out both;
+}
+
+.skip-link {
+  position: fixed;
+  z-index: 50;
+  top: 0.75rem;
+  left: 0.75rem;
+  transform: translateY(-200%);
+  border-radius: 0.375rem;
+  background: #171717;
+  color: white;
+  padding: 0.6rem 0.8rem;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+@keyframes state-entry {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}

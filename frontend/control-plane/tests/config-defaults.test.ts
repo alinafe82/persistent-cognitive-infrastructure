@@ -8,6 +8,7 @@ describe("default configuration fallbacks", () => {
     delete process.env.NEXT_PUBLIC_MONETIZATION_MODE;
     delete process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
     delete process.env.NEXT_PUBLIC_GTM_ID;
+    delete process.env.NEXT_PUBLIC_VISIT_TRACKING_ENABLED;
     delete process.env.PCI_CONTROL_PLANE_URL;
   });
 
@@ -23,7 +24,8 @@ describe("default configuration fallbacks", () => {
     const controlPlane = await import("../src/lib/control-plane");
 
     expect(site.SITE_URL).toBe("https://pci-control-plane.local");
-    expect(site.CONTACT_EMAIL).toBe("security@pci-control-plane.example");
+    expect(site.CONTACT_EMAIL).toBe("security@repowave.dev");
+    expect(site.VISIT_TRACKING_ENABLED).toBe(false);
     expect(site.MONETIZATION_MODE).toBe("leadgen");
     expect(site.GOOGLE_ANALYTICS_ENABLED).toBe(false);
     expect(site.GOOGLE_ANALYTICS_ID).toBe("");
