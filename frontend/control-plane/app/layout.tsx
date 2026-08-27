@@ -1,5 +1,6 @@
 import "./globals.css";
 import type { Metadata } from "next";
+import Link from "next/link";
 import {
   GOOGLE_ANALYTICS_ENABLED,
   GOOGLE_ANALYTICS_ID,
@@ -7,6 +8,7 @@ import {
   GOOGLE_TAG_MANAGER_ID,
   SITE_NAME,
   SITE_URL,
+  VISIT_TRACKING_ENABLED,
 } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -89,11 +91,13 @@ export default function RootLayout({
             }}
           />
         ) : null}
-        <script
-          defer
-          src="https://theusefulweb.app/visit-tracker.js"
-          data-site="pci-control-plane"
-        />
+        {VISIT_TRACKING_ENABLED ? (
+          <script
+            defer
+            src="https://theusefulweb.app/visit-tracker.js"
+            data-site="pci-control-plane"
+          />
+        ) : null}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -124,7 +128,16 @@ export default function RootLayout({
             />
           </noscript>
         ) : null}
+        <a className="skip-link" href="#main-content">Skip to main content</a>
         {children}
+        <footer className="mx-auto flex max-w-7xl flex-wrap gap-x-5 gap-y-2 px-5 py-8 text-sm text-graphite lg:px-8" aria-label="Site links">
+          <Link href="/">Control plane</Link>
+          <Link href="/privacy">Privacy</Link>
+          <Link href="/terms">Terms</Link>
+          <Link href="/disclosure">Disclosure</Link>
+          <Link href="/sponsor">Sponsor</Link>
+          <Link href="/contact">Contact</Link>
+        </footer>
       </body>
     </html>
   );

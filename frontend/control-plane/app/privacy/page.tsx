@@ -10,7 +10,7 @@ export const metadata = pageMetadata({
 
 export default function PrivacyPage() {
   return (
-    <main className="min-h-[100dvh] px-5 py-8 lg:px-8">
+    <main id="main-content" className="min-h-[100dvh] px-5 py-8 lg:px-8">
       <article className="panel mx-auto max-w-3xl px-5 py-5">
         <p className="font-mono text-xs uppercase text-graphite">Privacy</p>
         <h1 className="mt-2 text-3xl font-semibold text-ink">Privacy notice</h1>
