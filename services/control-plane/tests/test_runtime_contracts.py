@@ -1,7 +1,10 @@
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import UTC, datetime, tzinfo
 from uuid import uuid4
+
+import pytest
+from pydantic import ValidationError
 
 from app.domain.models import (
     Claim,
@@ -11,6 +14,7 @@ from app.domain.models import (
     PrimitiveType,
     Workload,
     WorkloadClass,
+    WorkloadCreate,
     WorkloadState,
 )
 from app.runtime.confidence import ConfidenceCalculator, ConfidenceInputs
@@ -31,6 +35,11 @@ def _confidence(score: float = 0.8) -> Confidence:
         evidence_score=0.9,
         contradiction_penalty=1.0,
     )
+
+
+class _NaiveTimezone(tzinfo):
+    def utcoffset(self, dt: datetime | None):
+        return None
 
 
 def _claim(object_value: str = "main") -> Claim:
@@ -128,3 +137,59 @@ def test_scheduler_requires_policy_owner_for_high_policy_risk() -> None:
     assert decision.admission_state == WorkloadState.ADMITTED_REQUIRES_APPROVAL
     assert "policy_owner" in decision.required_approval_classes
     assert PrimitiveType.REQUEST_APPROVAL in decision.primitive_allowlist
+
+
+def test_workload_create_rejects_timezone_naive_deadline() -> None:
+    with pytest.raises(ValidationError, match="deadline must be timezone-aware"):
+        WorkloadCreate(
+            tenant_id=uuid4(),
+            workload_class=WorkloadClass.REACTIVE,
+            objective="Investigate the active runtime incident.",
+            deadline=datetime(2026, 8, 23, 12, 0),
+        )
+
+    with pytest.raises(ValidationError, match="deadline must be timezone-aware"):
+        WorkloadCreate(
+            tenant_id=uuid4(),
+            workload_class=WorkloadClass.REACTIVE,
+            objective="Investigate the active runtime incident.",
+            deadline=datetime(2026, 8, 23, 12, 0, tzinfo=_NaiveTimezone()),
+        )
+
+
+def test_workload_rejects_timezone_naive_deadline_when_deserialized() -> None:
+    with pytest.raises(ValidationError, match="deadline must be timezone-aware"):
+        Workload(
+            tenant_id=uuid4(),
+            workload_class=WorkloadClass.REACTIVE,
+            objective="Investigate the active runtime incident.",
+            input_event_ids=[],
+            input_entity_ids=[],
+            requested_depth="standard",
+            deadline=datetime(2026, 8, 23, 12, 0),
+        )
+
+
+def test_claim_rejects_reversed_valid_time_window() -> None:
+    with pytest.raises(ValidationError, match="valid_time_end must be after"):
+        Claim(
+            tenant_id=uuid4(),
+            subject_entity_id=uuid4(),
+            predicate="deployment_window",
+            object_value="closed",
+            valid_time_start=datetime(2026, 8, 23, 12, 0, tzinfo=UTC),
+            valid_time_end=datetime(2026, 8, 23, 11, 0, tzinfo=UTC),
+            confidence=_confidence(),
+        )
+
+
+def test_claim_rejects_timezone_naive_valid_time() -> None:
+    with pytest.raises(ValidationError, match="valid-time timestamps must be timezone-aware"):
+        Claim(
+            tenant_id=uuid4(),
+            subject_entity_id=uuid4(),
+            predicate="deployment_window",
+            object_value="closed",
+            valid_time_start=datetime(2026, 8, 23, 12, 0),
+            confidence=_confidence(),
+        )
