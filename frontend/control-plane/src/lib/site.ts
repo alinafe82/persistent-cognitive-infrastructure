@@ -2,7 +2,7 @@ export const SITE_NAME = "PCI Control Plane";
 export const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ?? "https://pci-control-plane.local";
 export const CONTACT_EMAIL =
-  process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "security@pci-control-plane.example";
+  process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "security@repowave.dev";
 export const MONETIZATION_MODE =
   process.env.NEXT_PUBLIC_MONETIZATION_MODE ?? "leadgen";
 const configuredGoogleAnalyticsId =
@@ -18,6 +18,8 @@ export const GOOGLE_TAG_MANAGER_ID = /^GTM-[A-Z0-9]+$/i.test(
   ? configuredGoogleTagManagerId
   : "";
 export const GOOGLE_TAG_MANAGER_ENABLED = GOOGLE_TAG_MANAGER_ID.length > 0;
+export const VISIT_TRACKING_ENABLED =
+  process.env.NEXT_PUBLIC_VISIT_TRACKING_ENABLED === "true";
 
 export function siteUrl(path = "/"): string {
   return new URL(path, SITE_URL).toString();
