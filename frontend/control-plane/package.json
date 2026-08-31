@@ -22,7 +22,7 @@
     "@tailwindcss/postcss": "^4.3.2",
     "@types/node": "^26.1.2",
     "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.4",
+    "@types/react-dom": "^19.2.5",
     "@vitest/coverage-v8": "^4.1.10",
     "autoprefixer": "^10.5.4",
     "eslint": "^10.8.1",
