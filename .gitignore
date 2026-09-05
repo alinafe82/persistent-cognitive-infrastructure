@@ -2,6 +2,8 @@
 .env
 .env.*
 !.env.example
+!.env.sample
+!.env.template
 __pycache__/
 *.py[cod]
 *.egg-info/
@@ -43,8 +45,6 @@ source-snapshots/
 .continue/
 .windsurf/
 # Local environment and secrets
-!.env.sample
-!.env.template
 .envrc.local
 *.local
 *.pfx
