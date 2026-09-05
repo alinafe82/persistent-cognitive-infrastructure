@@ -31,3 +31,57 @@ source-snapshots/
 .specs/
 .agent/
 .scratch/
+
+# Local agent and design state
+.codex/environments/
+**/.codex/environments/
+.superdesign/
+.serena/
+.aider*
+.claude/settings.local.json
+**/.claude/settings.local.json
+.continue/
+.windsurf/
+# Local environment and secrets
+!.env.sample
+!.env.template
+.envrc.local
+*.local
+*.pfx
+*.crt
+*.cer
+*.csr
+*.jks
+*.keystore
+*.mobileprovision
+*.provisionprofile
+credentials.json
+client_secret*.json
+service-account*.json
+firebase-adminsdk*.json
+google-application-credentials*.json
+# Local platform state
+.aws/
+.azure/
+.gcloud/
+.vercel/
+.netlify/
+# Logs, caches, and generated output
+logs/
+.cache/
+.tmp/
+tmp/
+temp/
+Thumbs.db
+playwright-report/
+test-results/
+.tox/
+.nox/
+.pnpm-store/
+.nuxt/
+.output/
+.svelte-kit/
+.astro/
+.turbo/
+.vite/
+.parcel-cache/
