@@ -56,17 +56,17 @@ jobs:
               '[.[] | .workflow_runs[] | select(.event != "pull_request")][0] // empty' \
               <<<"${completed_runs}"
           )"
-          latest_id="$(jq -r '.id // empty' <<<"${latest_run:-{}}")"
+          latest_id="$(jq -r '.id // empty' <<<"${latest_run:-null}")"
           if [[ -z "${latest_id}" ]]; then
             echo "No completed default-branch run found for workflow ${WORKFLOW_ID}." >&2
             exit 1
           fi
-          latest_attempt="$(jq -r '.run_attempt // empty' <<<"${latest_run:-{}}")"
+          latest_attempt="$(jq -r '.run_attempt // empty' <<<"${latest_run:-null}")"
           if [[ ! "${latest_attempt}" =~ ^[1-9][0-9]*$ ]]; then
             echo "Latest completed run did not include a valid attempt number." >&2
             exit 1
           fi
-          workflow_name="$(jq -r '.name // empty' <<<"${latest_run:-{}}")"
+          workflow_name="$(jq -r '.name // empty' <<<"${latest_run:-null}")"
           if [[ -z "${workflow_name}" ]]; then
             echo "Latest completed run did not include a workflow name." >&2
             exit 1
@@ -98,7 +98,7 @@ jobs:
                 )
               ][0] // empty' <<<"${open_alerts}"
           )"
-          issue_number="$(jq -r '.number // empty' <<<"${issue_record:-{}}")"
+          issue_number="$(jq -r '.number // empty' <<<"${issue_record:-null}")"
           run_marker="<!-- ci-failure-alert:${WORKFLOW_ID}:${latest_id}:${latest_attempt} -->"
           details="Workflow: ${workflow_name}
           Conclusion: ${conclusion}
