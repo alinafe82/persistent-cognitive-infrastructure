@@ -27,7 +27,9 @@ jobs:
 
       - name: Refresh vulnerable dependency resolutions
         working-directory: frontend/control-plane
-        run: npm audit fix --package-lock-only --no-fund
+        run: |
+          npm update vitest @vitest/coverage-v8 --package-lock-only --no-fund
+          npm audit fix --package-lock-only --no-fund || true
 
       - name: Validate lockfile and frontend
         working-directory: frontend/control-plane
@@ -36,7 +38,7 @@ jobs:
           npm run lint
           npm run test:coverage
           npm run build
-          npm audit --audit-level=high
+          npm audit
 
       - name: Ensure manifest was not broadened
         run: git diff --exit-code -- frontend/control-plane/package.json
