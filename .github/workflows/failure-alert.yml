@@ -93,7 +93,7 @@ jobs:
               --arg legacy_marker "${legacy_marker}" \
               '[.[][] |
                 select(
-                  ((.body // "") | contains($marker_prefix)) ||
+                  ((.body // "") | contains($marker_prefix)) or
                   ((.body // "") | contains($legacy_marker))
                 )
               ][0] // empty' <<<"${open_alerts}"
