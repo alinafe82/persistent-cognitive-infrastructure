@@ -92,7 +92,6 @@ excluded_parts = {
     "pci_control_plane.egg-info",
 }
 excluded_slop_files = {
-    Path("AGENTS.md"),
     Path("scripts/verify.sh"),
     Path("frontend/control-plane/package-lock.json"),
 }
