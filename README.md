@@ -20,6 +20,11 @@ In one terminal, start the local stack and leave it running:
 docker compose -f deployments/docker-compose.yml up --build
 ```
 
+Require Docker **Engine 28.0.0 or newer** before starting this stack. Older engines
+can expose localhost-published ports to other hosts on the same layer-2 network;
+see [Docker’s port-publishing warning](https://docs.docker.com/engine/network/port-publishing/#publishing-ports).
+Do not run this development stack on an older engine.
+
 The local Compose stack binds published ports to `127.0.0.1`. Container-to-container
 connections remain on the Compose network. The stack uses development credentials;
 hosted deployment and user authentication require separate configuration. CI checks
@@ -162,7 +167,7 @@ persistent-cognitive-infrastructure/
 
 Prerequisites:
 
-- Docker with Compose v2
+- Docker Engine 28.0.0 or newer with Compose v2 (check the **Server** version with `docker version`)
 - Python 3.12
 - Node 20+
 

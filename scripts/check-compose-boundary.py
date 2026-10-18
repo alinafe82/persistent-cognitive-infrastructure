@@ -8,8 +8,11 @@ import sys
 def boundary_errors(model):
     errors = []
     for name, service in model.get("services", {}).items():
-        if service.get("network_mode") == "host":
-            errors.append(f"{name}: host networking bypasses the local boundary")
+        mode = service.get("network_mode", "")
+        if mode == "host" or mode.startswith(("container:", "service:")):
+            errors.append(
+                f"{name}: shared network namespace bypasses the local boundary"
+            )
         for port in service.get("ports", []):
             if port.get("host_ip") not in {"127.0.0.1", "::1"}:
                 errors.append(f"{name}: published port must bind to loopback")

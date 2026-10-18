@@ -34,10 +34,14 @@ class LocalBoundaryTests(unittest.TestCase):
                     )
                 )
 
-    def test_host_network_bypass_is_rejected(self):
-        self.assertTrue(
-            boundary.boundary_errors({"services": {"api": {"network_mode": "host"}}})
-        )
+    def test_shared_network_namespace_bypass_is_rejected(self):
+        for mode in ["host", "container:external-host-network", "service:external"]:
+            with self.subTest(mode=mode):
+                self.assertTrue(
+                    boundary.boundary_errors(
+                        {"services": {"api": {"network_mode": mode}}}
+                    )
+                )
 
 
 if __name__ == "__main__":
