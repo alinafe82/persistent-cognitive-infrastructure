@@ -20,6 +20,12 @@ In one terminal, start the local stack and leave it running:
 docker compose -f deployments/docker-compose.yml up --build
 ```
 
+The local Compose stack binds published ports to `127.0.0.1`. Container-to-container
+connections remain on the Compose network. The stack uses development credentials;
+hosted deployment and user authentication require separate configuration. CI checks
+the normalized Compose model for wildcard or host-network publishing.
+
+
 In a second terminal, run the static-and-structural verifier:
 
 ```bash
