@@ -7,6 +7,7 @@ import type { GraphLink, GraphNode } from "@/types";
 type Props = {
   nodes: GraphNode[];
   links: GraphLink[];
+  unavailable?: boolean;
 };
 
 type SimNode = GraphNode & d3.SimulationNodeDatum;
@@ -24,7 +25,7 @@ const nodeColors: Record<string, string> = {
 };
 const fallbackNodeColor = "#3F4148";
 
-export function ContextGraph({ nodes, links }: Props) {
+export function ContextGraph({ nodes, links, unavailable = false }: Props) {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const nodeLabels = new Map(nodes.map((node) => [node.id, node.label]));
   const simulationNodes = useMemo<SimNode[]>(() => nodes.map((node) => ({ ...node })), [nodes]);
@@ -116,10 +117,10 @@ export function ContextGraph({ nodes, links }: Props) {
   }, [simulationLinks, simulationNodes]);
 
   return (
-    <div className="panel h-full min-h-[420px] overflow-hidden">
+    <div className={`panel overflow-hidden ${nodes.length ? "h-full min-h-[420px]" : ""}`}>
       <div className="flex h-12 items-center justify-between border-b border-line px-4">
         <h2 className="text-sm font-semibold text-ink">Context Graph</h2>
-        <span className="font-mono text-xs text-graphite">{nodes.length} entities</span>
+        <span className="font-mono text-xs text-graphite">{unavailable ? "Unavailable" : `${nodes.length} entities`}</span>
       </div>
       {nodes.length ? (
         <>
@@ -148,8 +149,15 @@ export function ContextGraph({ nodes, links }: Props) {
           </div>
         </>
       ) : (
-        <div className="flex h-[420px] items-center justify-center px-4 text-center text-sm text-graphite">
-          No projected entities yet.
+        <div className="px-4 py-6 text-sm text-graphite">
+          {unavailable ? (
+            <>
+              <p>Graph data is unavailable.</p>
+              <p className="mt-2">Restore the control-plane connection, then choose Refresh state.</p>
+            </>
+          ) : (
+            <p>No projected entities yet.</p>
+          )}
         </div>
       )}
     </div>
