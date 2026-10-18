@@ -12,6 +12,7 @@ import {
 } from "@/lib/site";
 
 export const metadata: Metadata = {
+  other: { "google-adsense-account": "ca-pub-9595222068473508" },
   metadataBase: new URL(SITE_URL),
   title: {
     default: SITE_NAME,
