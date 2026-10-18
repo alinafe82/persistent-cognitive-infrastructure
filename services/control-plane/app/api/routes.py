@@ -60,6 +60,7 @@ class DecisionInsight(TypedDict):
 class InMemoryControlPlaneStore:
     def __init__(self) -> None:
         self.events: dict[UUID, SemanticEventEnvelope] = {}
+        self.published_event_ids: set[UUID] = set()
         self.entities: dict[UUID, Entity] = {}
         self.claims: dict[UUID, Claim] = {}
         self.workloads: dict[UUID, Workload] = {}
@@ -68,6 +69,7 @@ class InMemoryControlPlaneStore:
 
     def clear(self) -> None:
         self.events.clear()
+        self.published_event_ids.clear()
         self.entities.clear()
         self.claims.clear()
         self.workloads.clear()
@@ -736,8 +738,9 @@ async def ingest_event(event: SemanticEventEnvelope) -> EventIngestResponse:
             status_code=status.HTTP_409_CONFLICT,
             detail=str(exc),
         ) from exc
-    if newly_accepted:
+    if newly_accepted or event.event_id not in store.published_event_ids:
         await publisher.publish(event)
+        store.published_event_ids.add(event.event_id)
     return EventIngestResponse(
         event_id=event.event_id,
         accepted=True,
