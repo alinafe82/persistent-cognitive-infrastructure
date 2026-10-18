@@ -22,7 +22,7 @@ export function EventTimeline({ events }: Props) {
         {events.length ? events.map((event) => (
           <div key={event.id} className="state-entry grid grid-cols-[52px_1fr_24px] items-center gap-3 px-4 py-3">
             <span className="font-mono text-xs text-graphite">{event.time}</span>
-            <div>
+            <div className="min-w-0 break-words">
               <p className="text-sm font-medium leading-5 text-ink">{event.label}</p>
               <p className="font-mono text-xs text-graphite">{event.topic}</p>
             </div>
