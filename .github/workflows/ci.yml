@@ -109,3 +109,17 @@ jobs:
 
       - name: Render chart
         run: helm template pci deployments/helm/pci
+
+  local-network-boundary:
+    name: Local network boundary
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Check local publishing policy
+        run: |
+          python3 scripts/test_compose_boundary.py
+          docker compose -f deployments/docker-compose.yml config --format json | python3 scripts/check-compose-boundary.py

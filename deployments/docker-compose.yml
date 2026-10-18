@@ -11,7 +11,7 @@ services:
       PCI_TEMPORAL_ADDRESS: temporal:7233
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     depends_on:
       - postgres
       - nats
@@ -25,7 +25,7 @@ services:
       POSTGRES_USER: pci
       POSTGRES_PASSWORD: pci # pragma: allowlist secret # gitleaks:allow
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - pci-postgres:/var/lib/postgresql/data
       - ../schemas/sql/001_core.sql:/docker-entrypoint-initdb.d/001_core.sql:ro
@@ -37,8 +37,8 @@ services:
       - "-m"
       - "8222"
     ports:
-      - "4222:4222"
-      - "8222:8222"
+      - "127.0.0.1:4222:4222"
+      - "127.0.0.1:8222:8222"
     volumes:
       - pci-nats:/data
 
@@ -49,7 +49,7 @@ services:
       - "--appendonly"
       - "yes"
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     volumes:
       - pci-redis:/data
 
@@ -72,7 +72,7 @@ services:
       POSTGRES_SEEDS: temporal-postgres
       DYNAMIC_CONFIG_FILE_PATH: config/dynamicconfig/development-sql.yaml
     ports:
-      - "7233:7233"
+      - "127.0.0.1:7233:7233"
     depends_on:
       - temporal-postgres
 
@@ -82,7 +82,7 @@ services:
       TEMPORAL_ADDRESS: temporal:7233
       TEMPORAL_CORS_ORIGINS: http://localhost:3000,http://localhost:8080
     ports:
-      - "8233:8080"
+      - "127.0.0.1:8233:8080"
     depends_on:
       - temporal
 
@@ -93,9 +93,9 @@ services:
     volumes:
       - ./observability/otel/otel-collector.yaml:/etc/otelcol/config.yaml:ro
     ports:
-      - "4317:4317"
-      - "4318:4318"
-      - "8889:8889"
+      - "127.0.0.1:4317:4317"
+      - "127.0.0.1:4318:4318"
+      - "127.0.0.1:8889:8889"
 
   prometheus:
     image: prom/prometheus:v2.53.0
@@ -106,7 +106,7 @@ services:
       - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - pci-prometheus:/prometheus
     ports:
-      - "9090:9090"
+      - "127.0.0.1:9090:9090"
 
   grafana:
     image: grafana/grafana:11.1.0
@@ -118,7 +118,7 @@ services:
       - pci-grafana:/var/lib/grafana
       - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
     ports:
-      - "3001:3000"
+      - "127.0.0.1:3001:3000"
     depends_on:
       - prometheus
 
