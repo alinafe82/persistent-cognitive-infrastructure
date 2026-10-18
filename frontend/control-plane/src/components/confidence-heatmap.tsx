@@ -28,12 +28,12 @@ export function ConfidenceHeatmap({ nodes }: Props) {
         <h2 className="text-sm font-semibold text-ink">Confidence</h2>
         <span className="font-mono text-xs text-graphite">{averageConfidence}%</span>
       </div>
-      <div className="grid grid-cols-2 gap-2 p-4">
+      <div className="grid grid-cols-1 gap-2 p-4 sm:grid-cols-2">
         {nodes.length ? nodes.map((node) => (
-          <div key={node.id} className="state-entry min-h-[72px] rounded-md border border-line bg-white p-3">
+          <div key={node.id} className="state-entry min-w-0 min-h-[72px] rounded-md border border-line bg-white p-3">
             <div className="flex items-center justify-between gap-3">
-              <span className="truncate text-sm font-semibold text-ink">{node.label}</span>
-              <span className="font-mono text-xs text-graphite">
+              <span className="min-w-0 break-words text-sm font-semibold text-ink">{node.label}</span>
+              <span className="shrink-0 font-mono text-xs text-graphite">
                 {Math.round(clampConfidence(node.confidence) * 100)}%
               </span>
             </div>
@@ -46,7 +46,7 @@ export function ConfidenceHeatmap({ nodes }: Props) {
             <p className="mt-2 font-mono text-[11px] text-graphite">{node.kind}</p>
           </div>
         )) : (
-          <div className="col-span-2 min-h-[96px] rounded-md border border-line bg-white p-4 text-sm text-graphite">
+          <div className="sm:col-span-2 min-h-[96px] rounded-md border border-line bg-white p-4 text-sm text-graphite">
             No confidence records yet.
           </div>
         )}
