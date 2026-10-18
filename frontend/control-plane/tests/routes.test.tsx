@@ -138,16 +138,16 @@ describe("control plane loader", () => {
 
     const state = await controlPlane.loadControlPlaneState();
 
-    expect(state.error).toBe("Control plane returned HTTP 503");
+    expect(state.error).toBe("Control plane unavailable.");
     expect(state.graphNodes).toEqual([]);
   });
 
-  it("reports network failures with the trimmed base URL", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("offline")));
+  it("keeps network exceptions and configured credentials out of returned errors", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("offline at https://operator:secret@internal.example")));
 
     const state = await controlPlane.loadControlPlaneState();
 
-    expect(state.error).toBe("Control plane unavailable at http://127.0.0.1:8080: offline");
+    expect(state.error).toBe("Control plane unavailable.");
   });
 });
 
@@ -262,6 +262,11 @@ describe("public routes", () => {
     expect(markup).toContain("No runtime signals are available.");
     expect(markup).toContain("Waiting for semantic events");
     expect(markup).toContain("scripts/load-demo.sh");
+    expect(markup).toContain(">0 entities</span>");
+    expect(markup).toContain(">0%</span>");
+    expect(markup.match(/>0<\/p>/g)).toHaveLength(3);
+    expect(markup).not.toContain("Unavailable");
+    expect(markup).not.toContain('role="alert"');
   });
 
   it("renders an error banner when the backend responds with a failure", async () => {
@@ -276,7 +281,34 @@ describe("public routes", () => {
 
     const markup = renderToStaticMarkup(await home.default());
 
-    expect(markup).toContain("Control plane returned HTTP 503");
+    expect(markup).toContain('role="alert"');
+    expect(markup).toContain("Check that the control-plane service is running");
+    expect(markup).toContain("Refresh state");
+    expect(markup.match(/>Unavailable<\/p>/g)).toHaveLength(4);
+    expect(markup).toContain("Graph data is unavailable.");
+    expect(markup).not.toContain(">0<");
+    expect(markup).not.toContain("0%");
+    expect(markup).not.toContain("0 entities");
+    expect(markup).not.toContain("No projected entities yet.");
+    expect(markup).not.toContain("No confidence records yet.");
+    expect(markup).not.toContain("HTTP 503");
+    expect(markup).not.toContain("port 8080");
+  });
+
+  it("does not expose backend URLs or exception details on a connection failure", async () => {
+    const backendUrl = "https://operator:secret@internal.example";
+    vi.stubEnv("PCI_CONTROL_PLANE_URL", backendUrl);
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error(`${backendUrl}: private detail`)));
+    try {
+      const markup = renderToStaticMarkup(await home.default());
+      expect(markup).toContain("The dashboard could not load control-plane data.");
+      expect(markup).toContain("Unavailable");
+      expect(markup).not.toContain("internal.example");
+      expect(markup).not.toContain("secret");
+      expect(markup).not.toContain("private detail");
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 
   it.each([

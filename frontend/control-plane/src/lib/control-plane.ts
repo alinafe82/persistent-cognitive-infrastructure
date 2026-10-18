@@ -21,7 +21,7 @@ export async function loadControlPlaneState(): Promise<ControlPlaneState> {
     if (!response.ok) {
       return {
         ...EMPTY_STATE,
-        error: `Control plane returned HTTP ${response.status}`
+        error: "Control plane unavailable."
       };
     }
 
@@ -33,11 +33,10 @@ export async function loadControlPlaneState(): Promise<ControlPlaneState> {
       workloads: payload.workloads ?? [],
       insights: payload.insights ?? []
     };
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
+  } catch {
     return {
       ...EMPTY_STATE,
-      error: `Control plane unavailable at ${baseUrl}: ${message}`
+      error: "Control plane unavailable."
     };
   }
 }

@@ -7,6 +7,19 @@ import { WorkloadInspector } from "@/components/workload-inspector";
 import { loadControlPlaneState } from "@/lib/control-plane";
 import { DatabaseZap, Gauge, RadioTower, Shield } from "lucide-react";
 
+function UnavailablePanel({ title }: { title: string }) {
+  return (
+    <section className="panel">
+      <div className="flex h-12 items-center border-b border-line px-4">
+        <h2 className="text-sm font-semibold text-ink">{title}</h2>
+      </div>
+      <p className="px-4 py-6 text-sm text-graphite">
+        Unavailable until the control-plane connection is restored.
+      </p>
+    </section>
+  );
+}
+
 function clampConfidence(score: number): number {
   return Math.max(0, Math.min(1, score));
 }
@@ -45,7 +58,9 @@ export default async function Home() {
                   <span className="metric-label">{metric.label}</span>
                   <metric.icon className="h-4 w-4 text-graphite" aria-hidden="true" />
                 </div>
-                <p className="mt-2 font-mono text-lg font-semibold text-ink">{metric.value}</p>
+                <p className={`mt-2 font-mono font-semibold text-ink ${error ? "text-base" : "text-lg"}`}>
+                  {error ? "Unavailable" : metric.value}
+                </p>
               </div>
             ))}
           </div>
@@ -55,9 +70,10 @@ export default async function Home() {
 
       {error ? (
         <div className="state-entry mb-5 rounded-md border border-danger/30 bg-white px-4 py-3 text-sm text-danger" role="alert">
-          <p className="font-medium">The dashboard could not reach the control plane.</p>
+          <p className="font-medium">The dashboard could not load control-plane data.</p>
           <p className="mt-1 text-graphite">
-            Start the API on port 8080, then choose Refresh state. Technical detail: {error}
+            Check that the control-plane service is running and this dashboard’s connection is configured,
+            then choose Refresh state. Contact your operator if the connection is still unavailable.
           </p>
         </div>
       ) : null}
@@ -76,17 +92,17 @@ export default async function Home() {
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.65fr)]">
         <div className="order-2 xl:order-1">
-          <ContextGraph nodes={graphNodes} links={graphLinks} />
+          <ContextGraph nodes={graphNodes} links={graphLinks} unavailable={Boolean(error)} />
         </div>
         <div className="order-1 grid gap-5 xl:order-2">
-          <IntelligenceBrief insights={insights} />
-          <EventTimeline events={semanticEvents} />
+          {error ? <UnavailablePanel title="Decision Intelligence" /> : <IntelligenceBrief insights={insights} />}
+          {error ? <UnavailablePanel title="Semantic Events" /> : <EventTimeline events={semanticEvents} />}
         </div>
       </div>
 
       <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(360px,0.42fr)_minmax(0,0.58fr)]">
-        <ConfidenceHeatmap nodes={graphNodes} />
-        <WorkloadInspector workloads={workloads} />
+        {error ? <UnavailablePanel title="Confidence" /> : <ConfidenceHeatmap nodes={graphNodes} />}
+        {error ? <UnavailablePanel title="Execution Topology" /> : <WorkloadInspector workloads={workloads} />}
       </div>
 
       <section className="panel mt-5 grid gap-4 px-5 py-4 lg:grid-cols-[1fr_auto] lg:items-center">
