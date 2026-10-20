@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Persistent Cognitive Infrastructure — local control-plane prototype</title>
+  <meta name="description" content="Explore the open-source PCI local control-plane prototype: semantic events, context graphs, evidence and verification workloads. Read the architecture and run it locally.">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <a class="skip" href="#main-content">Skip to content</a>
+  <header class="site-header wrap">
+    <a class="brand" href="/" aria-label="Persistent Cognitive Infrastructure home"><img src="/icon.svg" width="38" height="38" alt=""><span>Persistent Cognitive<br>Infrastructure</span></a>
+    <nav aria-label="Main navigation"><a href="#how-it-works">How it works</a><a href="#run-locally">Run locally</a><a href="https://github.com/alinafe82/persistent-cognitive-infrastructure">Source ↗</a></nav>
+  </header>
+  <main id="main-content" class="wrap">
+    <section class="hero" aria-labelledby="hero-title">
+      <div><p class="eyebrow">Open-source · local prototype</p>
+        <h1 id="hero-title">Keep system context connected to its evidence.</h1>
+        <p class="intro">A local control plane for exploring how software changes become context graphs, confidence scores and verification workloads.</p>
+        <div class="actions"><a class="button primary" href="#run-locally">Run the local prototype</a><a class="button" href="https://github.com/alinafe82/persistent-cognitive-infrastructure#readme">Read the documentation ↗</a></div>
+        <p class="boundary">This public site is documentation. It does not connect to a control plane, collect repository data or provide a hosted account.</p>
+      </div>
+      <figure class="flow" aria-labelledby="flow-caption">
+        <figcaption id="flow-caption">The local prototype’s context loop</figcaption>
+        <ol><li><span class="step">01</span><div><h2>Receive an event</h2><p>Represent a change in the software system.</p></div></li><li><span class="step">02</span><div><h2>Build context</h2><p>Connect entities, claims and their evidence.</p></div></li><li><span class="step">03</span><div><h2>Inspect verification</h2><p>Review confidence and scheduled workloads.</p></div></li></ol>
+        <p class="diagram-note">Architecture overview, not a live system feed.</p>
+      </figure>
+    </section>
+    <section id="how-it-works" class="section" aria-labelledby="capabilities-title">
+      <p class="eyebrow">What you can explore</p><h2 id="capabilities-title">A runnable starting point for context infrastructure.</h2>
+      <div class="cards"><article><h3>Semantic state</h3><p>Inspect a graph of entities and relationships, a semantic event timeline and confidence information through the local API and dashboard.</p></article><article><h3>Verification contracts</h3><p>Review the OpenAPI, protobuf, JSON-schema and database contracts alongside the implementation.</p></article><article><h3>Workload inspection</h3><p>Explore the local scheduling and governance model with the included sample. The control plane starts empty.</p></article></div>
+    </section>
+    <section id="run-locally" class="section setup" aria-labelledby="setup-title">
+      <div><p class="eyebrow">Start with the repository</p><h2 id="setup-title">Run it on your own machine.</h2><p>The repository documents Docker Engine 28 or newer, the local API, the frontend and the sample loader. Follow those instructions for prerequisites and verification.</p><a class="button primary" href="https://github.com/alinafe82/persistent-cognitive-infrastructure#five-minute-local-demo">Open the setup guide ↗</a></div>
+      <aside class="limitations" aria-labelledby="limits-title"><h3 id="limits-title">Know the current limits</h3><ul><li>State is stored in memory and resets when the process stops.</li><li>Production storage, external connectors and worker pools are not implemented.</li><li>Hosted authentication and private runtime access require separate engineering.</li></ul><p>Keep secrets and private production data out of this prototype.</p></aside>
+    </section>
+    <section class="section contact" aria-labelledby="contact-title"><div><p class="eyebrow">Questions about the project?</p><h2 id="contact-title">Talk through your use case.</h2><p>Use the owner’s inquiry page for a project question or architecture-review inquiry. Sending an inquiry does not create a paid order.</p></div><a class="button" href="https://www.alinafe.net/site-contact" rel="noreferrer">Contact the owner ↗</a></section>
+  </main>
+  <footer class="wrap"><p>Persistent Cognitive Infrastructure · Public project documentation</p><p>This site has no account forms, advertising scripts or analytics.</p><a href="https://github.com/alinafe82/persistent-cognitive-infrastructure/blob/main/LICENSE">Repository license ↗</a></footer>
+</body>
+</html>

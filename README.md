@@ -14,6 +14,12 @@ This repo holds a runnable local control plane (FastAPI, in-memory repositories)
 
 ## Five-minute local demo
 
+The `site/` directory is a standalone public project website. It contains only
+static documentation and links to this repository and the owner's inquiry page;
+it never connects to the control-plane API. Publish that directory as a static
+site, separately from the local dashboard and private runtime. It has no build
+step, runtime dependencies, account forms, advertising scripts or analytics.
+
 In one terminal, start the local stack and leave it running:
 
 ```bash
